@@ -1,0 +1,61 @@
+#CP {
+	z-index:1;
+	position:fixed;
+	right: 5%;
+	top: 20%;
+	padding: 0.3em;
+	padding-bottom: 0;
+	-moz-user-select: none;
+	-webkit-user-select: none;
+	-ms-user-select: none;
+	/*user-select: none;*/
+}
+#CP svg {
+	position: relative;
+	padding: 0.1em;
+	border: 1px solid white;
+	border-radius: 0.2em;
+	box-shadow: 0 0 0.5em;
+	background-color: #808080;
+	margin: 0;
+	-moz-user-select: none;
+	-webkit-user-select: none;
+	-ms-user-select: none;
+	/*user-select: none;*/
+}
+.cpHolder {
+	position: relative;
+	display: inline-block;
+}
+#plt {
+	cursor: pointer;				
+	height: 35vmin;
+	width: 35vmin;
+}
+#hue {
+	cursor: n-resize;
+	height: 35vmin;
+	width: 3.5vmin;
+}
+#svSel, #hueSel {
+	cursor: pointer;
+	position: absolute;
+	bottom: 0.2em;
+	border: 0.15em solid white;
+	border-radius: 100%;
+	box-shadow: 0 0 0.1em;
+}
+#svSel div {
+	padding: 0.3em;
+	border: 0.1em solid grey;
+	border-radius: 100%;
+}
+#hueSel {
+	cursor: grab;
+	border: 0.2em solid white;
+	top: 0;
+	margin-right: 10%;
+	width: 90%;
+	height: 0.2em;
+	border-radius: 0.2em;
+}

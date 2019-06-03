@@ -15,11 +15,11 @@ function vRPNoCarjack.tunnel:setVehicleDoorsForEveryone(veh, doors, plate)
 		
             local identity = vRP.EXT.Identity:getIdentity(user.source)
             if identity then
-                local user_plate = "P " .. identity.registration
+                local user_plate = identity.registration
 
                 if user_plate ~= plate then
                     for id, user in pairs(vRP.users) do
-                        self.remote.setVehicleDoors(id, veh, doors)
+                        self.remote._setVehicleDoors(user.source, veh, doors)
                     end
                 end
 

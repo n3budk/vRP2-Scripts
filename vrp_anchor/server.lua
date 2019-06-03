@@ -1,11 +1,13 @@
 local vRPAnchor = class("vRPAnchor", vRP.Extension)
 
 local function menu_boat(self)
+
     local function m_anchor(menu)
         local user = menu.user
         local inboat = self.remote.isPedInAnyBoat(user.source)
 
-        if inboat then
+        if inboat or user:hasPermission("!in_vehicle") then
+	 
             vRP.EXT.Base.remote._notify(user.source, "Must be standing on boat to anchor")
         else
             self.remote.anchor(user.source)
@@ -36,6 +38,7 @@ end
 
 function vRPAnchor:__construct()
     vRP.Extension.__construct(self)
+	
     menu_boat(self)
 
     local function m_boat(menu)

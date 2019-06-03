@@ -11,7 +11,7 @@ cfg.hospitals = {
       _config = {x = -449.67, y= -340.83, z= 34.50, map_entity = {"PoI", {blip_id = 586, blip_color = 1, marker_id = 1, scale = {1.0,1.0,1.0},color={0, 255, 0,125} }}},
 },
 ["3"] = {
-      _config = {x = 296.64, y= -602.74, z= 44.30, map_entity = {"PoI", {blip_id = 586, blip_color = 1, marker_id = 1, scale = {1.0,1.0,1.0},color={0, 255, 0,125} }}},
+      _config = {x = 308.09, y= -594.85, z= 43.29, map_entity = {"PoI", {blip_id = 586, blip_color = 1, marker_id = 1, scale = {1.0,1.0,1.0},color={0, 255, 0,125} }}},
 },
 
 ["4"] = {
@@ -36,7 +36,7 @@ cfg.lang = {
   title = "Hospitals",
   basicheal = "$500<br />This will partly heal you.",
   fullheal = "$1000<br /><br />This will fully heal you.",
-  armourheal = "$2000<br />This will fully heal you and apply armour"
+  armourheal = "$2000<br />This will fully heal you and apply armor"
 }
 
 return cfg

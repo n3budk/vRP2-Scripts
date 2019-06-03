@@ -1,10 +1,3 @@
-Tunnel = module("vrp", "lib/Tunnel")
-Proxy = module("vrp", "lib/Proxy")
-
-
-local cvRP = module("vrp", "client/vRP")
-vRP = cvRP() 
-
 local CarWash = class("CarWash", vRP.Extension)
 
 function CarWash:__construct()

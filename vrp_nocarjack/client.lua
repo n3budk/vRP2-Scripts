@@ -1,8 +1,3 @@
-Tunnel = module("vrp", "lib/Tunnel")
-Proxy = module("vrp", "lib/Proxy")
-local cvRP = module("vrp", "client/vRP")
-vRP = cvRP()
-
 local cfg = module("vrp_nocarjack", "cfg/nocarjack")
 
 local vRPNoCarjack = class("vRPNoCarjack", vRP.Extension)
@@ -45,16 +40,24 @@ Citizen.CreateThread(function()
 			    blacklisted = true
 			  end
 			end
+			
+			-- check if vehicle is in whitelist
+			local whitelist = false
+			for k,v in pairs(cfg.whitelist) do
+			  if IsVehicleModel(veh, GetHashKey(v)) then
+			    whitelist = true
+			  end
+			end			
 
 			-- gets ped that is driving the vehicle
             local pedd = GetPedInVehicleSeat(veh, -1)
 			local plate = GetVehicleNumberPlateText(veh)
 			-- lock doors if not lucky or blacklisted
             if (lock == 7 or pedd) then
-				if not lucky or blacklisted then
-					self.remote.setVehicleDoorsForEveryone(veh, 2, plate)
+				if not lucky and not whitelist or blacklisted then
+					self.remote._setVehicleDoorsForEveryone(veh, 2, plate)
 				else
-					self.remote.setVehicleDoorsForEveryone(veh, 1, plate)
+					self.remote._setVehicleDoorsForEveryone(veh, 1, plate)
 				end
             end
         end
@@ -65,7 +68,10 @@ end)
 end
 
 function vRPNoCarjack:setVehicleDoors(veh, doors)
+
+
   SetVehicleDoorsLocked(veh, doors)
+
 end
 
 vRPNoCarjack.tunnel = {}

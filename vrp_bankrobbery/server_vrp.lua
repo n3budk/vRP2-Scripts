@@ -3,5 +3,5 @@ local Proxy = module("vrp", "lib/Proxy")
 local vRP = Proxy.getInterface("vRP")
 
 async(function()
-  vRP.loadScript("vrp_boombox", "server")
+  vRP.loadScript("vrp_bankrobbery", "server")
 end)

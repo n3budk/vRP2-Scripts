@@ -18,7 +18,7 @@ function CarWash:__construct()
 end
 
 function CarWash:triggerClean(user)
-    local vehicle = user:hasPermission("!in_vehicle")
+    local vehicle = user:hasPermission("!in_owned_vehicle")
 
     if vehicle then
         local dirt = self.remote.getDirtLevel(user.source)

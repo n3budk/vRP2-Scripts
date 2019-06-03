@@ -1,8 +1,3 @@
-Tunnel = module("vrp", "lib/Tunnel")
-Proxy = module("vrp", "lib/Proxy")
-local cvRP = module("vrp", "client/vRP")
-vRP = cvRP()
-
 local vRPAnchor = class("vRPAnchor", vRP.Extension)
 
 local anchored = false

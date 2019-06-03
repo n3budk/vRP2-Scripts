@@ -1,0 +1,167 @@
+/*ver 0.90*/
+@charset "UTF-8";
+
+@import url(http://fonts.googleapis.com/css?family=Titillium+Web:400,700);
+
+@font-face {
+	font-family: "Custom Font";
+	src: url(nui://vrp/gui/664_Copyright_House.ttf) format("truetype");
+}
+
+@font-face {
+	font-family: "Money Font";
+	src: url(nui://vrp/gui/pricedown.ttf) format("truetype");
+}
+
+@font-face {
+	font-family: "europe-normal";
+	src: url(nui://vrp/gui/europe-normal.ttf) format("truetype");
+}
+
+@font-face {
+	font-family: 'Open Sans';
+	src: local('Open Sans Light'), local('OpenSans-Light'), url('http://hb.bizmrg.com/fonts/opensans/300.woff2') format('woff2'), url('http://hb.bizmrg.com/fonts/opensans/300.woff') format('woff');
+	font-weight: 300;
+	font-style: normal;
+}
+
+
+html, body {
+	margin: 0;
+	height: 100%;
+	overflow: hidden;
+	font-size: 2vmin;
+	font-family: RockoFLF;
+}
+
+div.menu {
+	font-family: RockoFLF;
+	top: 25%;
+	left: 30px;
+	color: #fff;
+	position: fixed;
+	min-width: 20vw;
+	max-width: 35vw;
+	max-height: 55vh;
+	overflow: hidden;
+	font-weight: 100;
+	border-radius: 0.2em;
+	position: absolute;
+	margin: 0!important;
+	border-top: 0.5em rgba(0, 0, 0, 1.0);
+	border-bottom: 1em rgba(0, 0, 0, 1.0);
+	background-color: rgba(0, 0, 0, 0.55);
+	/*-moz-user-select: none;*/
+	-webkit-user-select: none;
+	/*-ms-user-select: none;
+	user-select: none;*/
+}
+
+div.menu h1 {
+	font-family: First Job;
+	background-size: cover;
+	background-image: url(https://vignette.wikia.nocookie.net/gtawiki/images/f/f2/GTAV-LSCustoms-Logo.png);
+	background-color: rgba(0, 0, 0, 0.55);
+	color: white;
+	text-transform: uppercase;
+	text-align: center;
+	margin: 0!important;
+	font-size: 1.3em;
+	padding: 80px;
+	border: 3px solid #000000;
+	box-shadow: inset -1px -1px 60px 0px rgba(0,0,0,1);
+}
+
+div.menu ul, .breadcrumbs {
+	font-family: sans-serif;
+	min-width: 10%;
+	overflow: hidden;
+	margin: 0;
+	padding: 0;
+}
+
+div.menu ul {
+	list-style-type: none;
+	max-height: 15em;
+}
+
+.breadcrumbs {
+	background-color: rgba(0, 0, 0, 0.9);
+	color: #fff;
+	font-size: 0.5em;
+	font-weight: bold;
+	text-align: left;
+	padding: 1em 1em 1em 2em;
+}
+
+.breadcrumb::before {
+	content: " > ";
+}
+
+div.menu li {
+	padding: 0.77em 1.3em;
+	color: #fff;
+	font-size: 0.8em;
+}
+
+.info, .folder, .price, .owned, .repair, .cart, .discard {
+	padding-left: 0.3em;
+	float: right;
+}
+
+.folder::before {
+	content: "🗀";
+	font-weight: 900;
+}
+
+.price::before {
+	content: "$";
+}
+
+.owned::before {
+	content: "✔";
+}
+
+.repair::before {
+	content: "🔧";
+}
+
+.cart::before {
+	content: "🛒";
+}
+
+.discard::before {
+	content: "✘";
+}
+
+div.menu li.current {
+	background-color: rgba(47, 184, 249, 0.55);
+	color: white;
+	border-left: 0.3em solid #25F279;
+}
+
+.infTxtC {
+	width: 100%;
+	bottom: 10%;
+	position: fixed;
+	text-align: center;
+}
+#infTxt {
+	color: white;
+	font-size: 1.7em;
+	padding: 1em 3em;
+	text-align: center;	
+	position: relative;
+	border-radius: 0.2em;
+	display: inline-block;
+	background-color: rgba(0, 0, 0, 0.55);
+}
+
+#infTxt span.f1, #infTxt span.f2, #infTxt span.f3 {
+	color: #58FB00;
+	font-weight: bold;
+}
+
+#infTxt span.f2 {
+	color: #2222dd;
+}

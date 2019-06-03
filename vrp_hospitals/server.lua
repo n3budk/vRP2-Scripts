@@ -14,6 +14,7 @@ local function menu_hospitals(self)
 	local payment = cfg.basicheal
 	if user:tryFullPayment(payment) then
 	vRP.EXT.Survival.remote._varyHealth(user.source,15)
+	--user:varyExp("physical", "strength", -0.03)
 
 	vRP.EXT.Base.remote._notify(user.source, "Paid ~g~$"..payment)
     end
@@ -25,6 +26,7 @@ end
 	local payment = cfg.fullheal
 	if user:tryFullPayment(payment) then
 	vRP.EXT.Survival.remote._varyHealth(user.source,100)
+		--user:varyExp("physical", "strength", -0.02)
 
 	vRP.EXT.Base.remote._notify(user.source, "Paid ~g~$"..payment)
     end
@@ -37,6 +39,7 @@ end
 	if user:tryFullPayment(payment) then
 	vRP.EXT.Survival.remote._varyHealth(user.source,100)
 	vRP.EXT.PlayerState.remote._setArmour(user.source, 200)
+	--user:varyExp("physical", "strength", -0.02)
 
 	vRP.EXT.Base.remote._notify(user.source, "Paid ~g~$"..payment)
     end
