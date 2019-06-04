@@ -3,10 +3,6 @@
 local lang = {
 
 
-	itemcheck = {
-		lockpick = "!aptitude.crime.crime.>4", --required aptitude for lockpicking
-		
-},
 	item = { --Add these to items
 	    lighter = "lighter", --Item
 		rolly = "rolly", --Item	

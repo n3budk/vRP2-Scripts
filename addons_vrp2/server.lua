@@ -15,55 +15,6 @@ lang = Lang.lang[lcfg.lang]
 
 local Addons = class("Addons", vRP.Extension)
 
-globalbox = false
-localbox = false
-
-local function menu_boombox(self)
-    local function m_localboom(menu)
-        local user = menu.user
-
-	if user:hasPermission("!item."..lang.item.bbox()..".>0") or user:hasPermission(lang.perms.nobbox()) then	
-		
-        if not globalbox then
-            localbox = true
-            self.remote.startBoomBox(user.source)
-        else
-            vRP.EXT.Base.remote._notify(user.source, lang.bbox.gloplay())
-        end	
-       else
-            vRP.EXT.Base.remote._notify(user.source, lang.bbox.inventory())			
-    end
-  end	
-
-    local function m_globalboom(menu)
-        local user = menu.user
-
-        if user:hasPermission(lang.perms.bbox()) then		
-		
-	if user:hasPermission("!item."..lang.item.bbox()..".>0") or user:hasPermission(lang.perms.nobbox()) then			
-            if not localbox then
-                globalbox = true
-                self.remote.startBoomBox(user.source)
-				else
-            vRP.EXT.Base.remote._notify(user.source, lang.bbox.localplay())
-            end
-			  else
-            vRP.EXT.Base.remote._notify(user.source, lang.bbox.inventory())
-        end
-        else
-            vRP.EXT.Base.remote._notify(user.source, lang.bbox.no())		
-    end
-  end
-
-
-    vRP.EXT.GUI:registerMenuBuilder("boombox", function(menu)
-        local user = menu.user
-        menu.title = lang.bbox.title()
-        menu.css.header_color = "rgba(0,125,255,0.75)"
-        menu:addOption(lang.bbox.playlo(), m_localboom)
-        menu:addOption(lang.bbox.playglo(), m_globalboom)
-    end)
-end
 
 
 --Mobile Police Computer
@@ -715,7 +666,99 @@ end
       menu:addOption("Drag", m_drag,"Drag the nearest handcuffed player")
   end)--]]
 
+globalbox = false
+localbox = false
+
+local function menu_boombox(self)
+    local function m_localboom(menu)
+        local user = menu.user
+
+	if user:hasPermission("!item."..lang.item.bbox()..".>0") or user:hasPermission(lang.perms.nobbox()) then	
+		
+        if not globalbox then
+            localbox = true
+            self.remote.startBoomBox(user.source)
+        else
+            vRP.EXT.Base.remote._notify(user.source, lang.bbox.gloplay())
+        end	
+       else
+            vRP.EXT.Base.remote._notify(user.source, lang.bbox.inventory())			
+    end
+  end	
+
+    local function m_globalboom(menu)
+        local user = menu.user
+
+        if user:hasPermission(lang.perms.bbox()) then		
+		
+	if user:hasPermission("!item."..lang.item.bbox()..".>0") or user:hasPermission(lang.perms.nobbox()) then			
+            if not localbox then
+                globalbox = true
+                self.remote.startBoomBox(user.source)
+				else
+            vRP.EXT.Base.remote._notify(user.source, lang.bbox.localplay())
+            end
+			  else
+            vRP.EXT.Base.remote._notify(user.source, lang.bbox.inventory())
+        end
+        else
+            vRP.EXT.Base.remote._notify(user.source, lang.bbox.no())		
+    end
+  end
+
+
+    vRP.EXT.GUI:registerMenuBuilder("boombox", function(menu)
+        local user = menu.user
+        menu.title = lang.bbox.title()
+        menu.css.header_color = "rgba(0,125,255,0.75)"
+        menu:addOption(lang.bbox.playlo(), m_localboom)
+        menu:addOption(lang.bbox.playglo(), m_globalboom)
+    end)
+end
   
+local function menu_pmenu(self)
+
+
+-- Lockpick vehicle
+local function m_lockpickveh(menu)
+    local user = menu.user
+    if user:tryTakeItem(lang.item.lockpick(), 1, true) or user:hasPermission("item.bypass") then
+        self.remote.lockpickVehicle(user.source, 20, true)
+		else
+		 vRP.EXT.Base.remote._notify(user.source, "~r~No lockpick in inventory")
+    end
+end
+
+-- Lockpick Bank Van
+local function m_breakvan(menu)
+    local user = menu.user
+	local vmod = "stockade"
+
+	local model = self.remote.isPlayerNearModel(user.source, vmod, 5)
+	if user:tryTakeItem("plasmacutter", 1, true) or user:hasPermission(lang.perms.lockpick_noapt()) then
+	if model then
+	self.remote.breakBankVan(user.source, 30)
+    else
+        vRP.EXT.Base.remote._notify(user.source, "Must be near a unoccupied armored van.")
+    end
+	    else
+		vRP.EXT.Base.remote._notify(user.source, "You need a Plasma Cutter.")
+        
+	end
+end
+
+
+	
+    vRP.EXT.GUI:registerMenuBuilder("player", function(menu)
+		menu.title = "Player Menu"	
+		menu:addOption("Lock picking kit", m_lockpickveh, lang.lockpick.menu2())
+		menu:addOption("Plasma cutter tool", m_breakvan, "Used to open up the back of a armored van.")
+
+		
+		
+    end)
+
+	end
   
 function Addons:__construct()
     vRP.Extension.__construct(self)
@@ -725,7 +768,7 @@ self.spikes = {}
 	  self.cfg = module("vrp", "cfg/garages")
 
 	  
-    --menu_playerkeys(self)
+    menu_pmenu(self)
     menu_vehicledoors(self)	
     menu_dynamicjail(self)
     menu_player(self)
@@ -752,15 +795,16 @@ self.spikes = {}
         menu:addOption("Doors", m_doors)
     end)
 
---BoomBox
-    local function m_boom(menu)
+--Consumables Drugs	
+    local function ch_consumable(menu)
         local user = menu.user
-            menu.user:openMenu("boombox")
-        end
-
+        menu.user:openMenu("consumable")
+    end	
+	
     vRP.EXT.GUI:registerMenuBuilder("player", function(menu)
-        menu:addOption("Boom Box", m_boom)
-    end)
+	local user = vRP.users_by_source[source]
+        menu:addOption("Consumable Drugs", ch_consumable)
+    end)	
 	
 --[[
 --Sell Car to Players	
@@ -773,6 +817,28 @@ self.spikes = {}
         menu:addOption("Keys", ch_sellcar)
     end) --]]
 
+--Player
+--Players Menu
+    local function ch_players(menu)
+        local user = menu.user
+        menu.user:openMenu("player")
+    end	
+	
+    vRP.EXT.GUI:registerMenuBuilder("main", function(menu)
+        menu:addOption("Player", ch_players)
+
+    end)	
+
+--BoomBox
+    local function m_boom(menu)
+        local user = menu.user
+            menu.user:openMenu("boombox")
+        end
+
+    vRP.EXT.GUI:registerMenuBuilder("player", function(menu)
+        menu:addOption("Boom Box", m_boom)
+    end)
+	
 --Jail in Mobile PC
     local function ch_mjail(menu)
         local user = menu.user
@@ -796,30 +862,8 @@ self.spikes = {}
         menu:addOption(lang.jail.menu(), ch_mjail)
 		end
     end)	
-	
 
---Players List
-    local function ch_players(menu)
-        local user = menu.user
-        menu.user:openMenu("player")
-    end	
-	
-    vRP.EXT.GUI:registerMenuBuilder("main", function(menu)
-        menu:addOption(lang.player.menu(), ch_players)
-    end)
-	
---Consumables Drugs	
-    local function ch_consumable(menu)
-        local user = menu.user
-        menu.user:openMenu("consumable")
-    end	
-	
-    vRP.EXT.GUI:registerMenuBuilder("player", function(menu)
-	local user = vRP.users_by_source[source]
-        menu:addOption("Consumable Drugs", ch_consumable)
-    end)	
-	
-
+		
 --Deployable Police Items	
     local function ch_police(menu)
         local user = menu.user
@@ -832,49 +876,9 @@ self.spikes = {}
 		end
     end)	
 	
--- Lockpick vehicle
-local function m_lockpickveh(menu)
-    local user = menu.user
-	if user:hasPermission(lang.itemcheck.lockpick()) or user:hasPermission(lang.perms.lockpick_noapt()) then
-    if user:tryTakeItem(lang.item.lockpick(), 1, true) then
-        self.remote.lockpickVehicle(user.source, 20, true)
-		else
-		 vRP.EXT.Base.remote._notify(user.source, "~r~No lockpick in inventory")
-		 end
-    else
-        vRP.EXT.Base.remote._notify(user.source, lang.lockpick.apti())
-    end
-end
-
-vRP.EXT.GUI:registerMenuBuilder("player", function(menu)
-	local user = vRP.users_by_source[source]
-        menu:addOption("Lock picking kit", m_lockpickveh, lang.lockpick.menu2())
-end)
 
 
--- Lockpick Bank Van
-local function m_breakvan(menu)
-    local user = menu.user
-	local vmod = "stockade"
 
-	local model = self.remote.isPlayerNearModel(user.source, vmod, 5)
-	if user:tryTakeItem("plasmacutter", 1, true) or user:hasPermission(lang.perms.lockpick_noapt()) then
-	if model then
-	self.remote.breakBankVan(user.source, 30)
-    else
-        vRP.EXT.Base.remote._notify(user.source, "Must be near a unoccupied armored van.")
-    end
-	    else
-		vRP.EXT.Base.remote._notify(user.source, "You need a Plasma Cutter.")
-        
-	end
-end
-
-
-vRP.EXT.GUI:registerMenuBuilder("player", function(menu)
-	local user = vRP.users_by_source[source]
-        menu:addOption("Plasma cutter tool", m_breakvan, "Used to open up the back of a armored van.")
-end)
 
 
 end
@@ -914,42 +918,10 @@ function Addons.event:playerSpawn(user, first_spawn)
                     end
                 end
             end
-
         end
     end)
-	
-    for k,v in pairs(self.cfg.garages) do
-      local ptype,x,y,z = table.unpack(v)
-
-      local group = self.cfg.garage_ptypes[ptype]
-      if group then
-        local gcfg = group._config
-
-
-        local menu
-        local function enter(user)
-          if user:hasPermissions(gcfg.permissions or {}) then
-            menu = user:openMenu("pgarage", {type = ptype, vehicles = group})
-          end
-        end
-
-        -- leave
-        local function leave(user)
-          if menu then
-            user:closeMenu(menu)
-          end
-        end
-
-        local ment = clone(gcfg.map_entity)
-        ment[2].title = lang.garage.title({ptype})
-        ment[2].pos = {x,y,z-1}
-        vRP.EXT.Map.remote._addEntity(user.source,ment[1], ment[2])
-
-        user:setArea("vRP:pgarage:"..k,x,y,z,2,5.5,enter,leave)
-      end
-    end
-  end
-end	
+	end
+end
 
 
 
