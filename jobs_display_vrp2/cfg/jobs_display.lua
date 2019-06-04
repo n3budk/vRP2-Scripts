@@ -1,7 +1,7 @@
 
 local cfg = {}
 
-cfg.firstjob = "Immigrant"
+cfg.firstjob = "citizen"
 cfg.showjob = true
 
 

@@ -1,4 +1,7 @@
-
+Tunnel = module("vrp", "lib/Tunnel")
+Proxy = module("vrp", "lib/Proxy")
+local cvRP = module("vrp", "client/vRP")
+vRP = cvRP()
 
 local vRPdmv = class("vRPdmv", vRP.Extension)
 
