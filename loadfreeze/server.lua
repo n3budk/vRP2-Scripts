@@ -1,5 +1,3 @@
-
-
 local LoadFreeze = class("LoadFreeze", vRP.Extension)
 
 
@@ -12,14 +10,15 @@ function LoadFreeze:__construct()
 
 LoadFreeze.event = {}
 
-function LoadFreeze.event:playerSpawn(user, first_spawn)
-if first_spawn then
-	SetTimeout(5000,function() 		
-	local unfrozen = true
-		self.remote._unFreeze(user.source, unfrozen)		
-	    end)
-	end
+
+
+
+function LoadFreeze.event:playerStateLoaded(user)
+if user and user:isReady() then
+	self.remote._unFreeze(user.source, true)	
+		end
 end
+
 	
 
 
