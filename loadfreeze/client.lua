@@ -5,8 +5,8 @@ function LoadFreeze:__construct()
   vRP.Extension.__construct(self)
   end
 
-local frozen = true
-local unfrozen = false  
+frozen = true
+unfrozen = false  
   
  Citizen.CreateThread(function()
 	while true do
@@ -31,7 +31,13 @@ function LoadFreeze:unFreeze(flag)
 	unfrozen = flag
 end
 
+
+function LoadFreeze:Freeze(flag)
+	frozen = flag
+end
+
 LoadFreeze.tunnel = {}
+LoadFreeze.tunnel.Freeze = LoadFreeze.Freeze
 LoadFreeze.tunnel.unFreeze = LoadFreeze.unFreeze
 
 
