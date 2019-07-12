@@ -1,6 +1,196 @@
-
 local Addons = class("Addons", vRP.Extension)
 
+--[[
+mask = nil
+function Addons:togglePlayerMask()
+	local custom = vRP.EXT.PlayerState.remote.getCustomization()
+	if custom[1][1] == 0 then
+	  custom[1] = mask
+	else
+	  mask = custom[1]
+	  custom[1] = {0,0}
+	end
+	vRP.EXT.PlayerState.remote._setCustomization(custom)
+end
+]]
+
+function Addons:getVehicleInDirection( coordFrom, coordTo )
+    local rayHandle = CastRayPointToPoint( coordFrom.x, coordFrom.y, coordFrom.z, coordTo.x, coordTo.y, coordTo.z, 10, GetPlayerPed( -1 ), 0 )
+    local _, _, _, _, vehicle = GetRaycastResult( rayHandle )
+    return vehicle
+end
+
+function Addons:getNearestVehicle(radius)
+    local x,y,z = table.unpack(GetEntityCoords(GetPlayerPed(-1),true))
+    local ped = GetPlayerPed(-1)
+    if IsPedSittingInAnyVehicle(ped) then
+      return GetVehiclePedIsIn(ped, true)
+    else
+      -- flags used:
+      --- 8192: boat
+      --- 4096: helicos
+      --- 4,2,1: cars (with police)
+
+      local veh = GetClosestVehicle(x+0.0001,y+0.0001,z+0.0001, radius+5.0001, 0, 8192+4096+4+2+1)  -- boats, helicos
+      if not IsEntityAVehicle(veh) then veh = GetClosestVehicle(x+0.0001,y+0.0001,z+0.0001, radius+5.0001, 0, 4+2+1) end -- cars
+      return veh
+    end
+end
+
+function Addons:deleteVehicleInFrontOrInside(offset)
+  local ped = GetPlayerPed(-1)
+  local veh = nil
+  if (IsPedSittingInAnyVehicle(ped)) then 
+    veh = GetVehiclePedIsIn(ped, false)
+  else
+    veh = self:getVehicleInDirection(GetEntityCoords(ped, 1), GetOffsetFromEntityInWorldCoords(ped, 0.0, offset, 0.0))
+  end
+  
+  if IsEntityAVehicle(veh) then
+    SetVehicleHasBeenOwnedByPlayer(veh,false)
+    Citizen.InvokeNative(0xAD738C3085FE7E11, veh, false, true) -- set not as mission entity
+    SetVehicleAsNoLongerNeeded(Citizen.PointerValueIntInitialized(veh))
+    Citizen.InvokeNative(0xEA386986E786A54F, Citizen.PointerValueIntInitialized(veh))
+    vRP.EXT.Base:notify("Success")
+  else
+    vRP.EXT.Base:notify("Too far")
+  end
+end
+
+
+function Addons:deleteNearestVehicle(radius)
+  local x,y,z = table.unpack(GetEntityCoords(GetPlayerPed(-1),true))
+  local veh = self:getNearestVehicle(radius)
+  
+  if IsEntityAVehicle(veh) then
+    SetVehicleHasBeenOwnedByPlayer(veh,false)
+    Citizen.InvokeNative(0xAD738C3085FE7E11, veh, false, true) -- set not as mission entity
+    SetVehicleAsNoLongerNeeded(Citizen.PointerValueIntInitialized(veh))
+    Citizen.InvokeNative(0xEA386986E786A54F, Citizen.PointerValueIntInitialized(veh))
+    vRP.EXT.Base:notify("Success")
+  else
+    vRP.EXT.Base:notify("Too far")
+  end
+end
+
+function Addons:spawnVehicle(model) 
+    local i = 0
+    local mhash = GetHashKey(model)
+    while not HasModelLoaded(mhash) and i < 1000 do
+	  if math.fmod(i,100) == 0 then
+	    vRP.EXT.Base:notify("loading") -- lang.spawnveh.invalid()
+	  end
+      RequestModel(mhash)
+      Citizen.Wait(30)
+	  i = i + 1
+    end
+
+    -- spawn car if model is loaded
+    if HasModelLoaded(mhash) then
+      local x,y,z = vRP.EXT.Base:getPosition()
+      local nveh = CreateVehicle(mhash, x,y,z+0.5, GetEntityHeading(GetPlayerPed(-1)), true, false) -- added player heading
+      SetVehicleOnGroundProperly(nveh)
+      SetEntityInvincible(nveh,false)
+      SetPedIntoVehicle(GetPlayerPed(-1),nveh,-1) -- put player inside
+      Citizen.InvokeNative(0xAD738C3085FE7E11, nveh, true, true) -- set as mission entity
+      SetVehicleHasBeenOwnedByPlayer(nveh,true)
+	  
+	  SetVehicleDoorsLocked(nveh, 1)
+		for i = 1,64 do 
+		SetVehicleDoorsLockedForPlayer(nveh, GetPlayerFromServerId(i), false)
+	end 
+	  
+      SetModelAsNoLongerNeeded(mhash)
+	  vRP.EXT.Base:notify("Success") -- lang.spawnveh.invalid()
+	else
+	  vRP.EXT.Base:notify("invalid") -- lang.spawnveh.invalid()
+	end
+end
+
+function Addons:tpToWaypoint()
+
+	local targetPed = GetPlayerPed(-1)
+	local targetVeh = GetVehiclePedIsUsing(targetPed)
+	if(IsPedInAnyVehicle(targetPed))then
+		targetPed = targetVeh
+    end
+
+	if(not IsWaypointActive())then
+		vRP.EXT.Base:notify("Waypoint not found") --lang.tptowaypoint.notfound()
+		return
+	end
+
+	local waypointBlip = GetFirstBlipInfoId(8) -- 8 = waypoint Id
+	local x,y,z = table.unpack(Citizen.InvokeNative(0xFA7C7F0AADF25D09, waypointBlip, Citizen.ResultAsVector())) 
+
+	-- ensure entity teleports above the ground
+	local ground
+	local groundFound = false
+	local groundCheckHeights = {100.0, 150.0, 50.0, 0.0, 200.0, 250.0, 300.0, 350.0, 400.0,450.0, 500.0, 550.0, 600.0, 650.0, 700.0, 750.0, 800.0}
+
+	for i,height in ipairs(groundCheckHeights) do
+		SetEntityCoordsNoOffset(targetPed, x,y,height, 0, 0, 1)
+		Wait(10)
+
+		ground,z = GetGroundZFor_3dCoord(x,y,height)
+		if(ground) then
+			z = z + 3
+			groundFound = true
+			break;
+		end
+	end
+
+	if(not groundFound)then
+		z = 1000
+		GiveDelayedWeaponToPed(PlayerPedId(), 0xFBAB5776, 1, 0) -- parachute
+	end
+
+	SetEntityCoordsNoOffset(targetPed, x,y,z, 0, 0, 1)
+	vRP.EXT.Base:notify("Teleported") -- lang.tptowaypoint.success()
+end
+
+
+local fwindowup = true
+function Addons:frontvehicleWindows()
+    local playerPed = GetPlayerPed(-1)
+    if IsPedInAnyVehicle(playerPed, false) then
+        local playerCar = GetVehiclePedIsIn(playerPed, false)
+		if ( GetPedInVehicleSeat( playerCar, -1 ) == playerPed ) then 
+            SetEntityAsMissionEntity( playerCar, true, true )
+		
+			if ( fwindowup ) then
+				RollDownWindow(playerCar, 0)
+				RollDownWindow(playerCar, 1)
+				fwindowup = false
+			else
+				RollUpWindow(playerCar, 0)
+				RollUpWindow(playerCar, 1)
+				fwindowup = true
+			end
+		end
+	end
+end
+
+local bwindowup = true
+function Addons:backvehicleWindows()
+    local playerPed = GetPlayerPed(-1)
+    if IsPedInAnyVehicle(playerPed, false) then
+        local playerCar = GetVehiclePedIsIn(playerPed, false)
+		if ( GetPedInVehicleSeat( playerCar, -1 ) == playerPed ) then 
+            SetEntityAsMissionEntity( playerCar, true, true )
+		
+			if ( bwindowup ) then
+				RollDownWindow(playerCar, 2)
+				RollDownWindow(playerCar, 3)
+				bwindowup = false
+			else
+				RollUpWindow(playerCar, 2)
+				RollUpWindow(playerCar, 3)
+				bwindowup = true
+			end
+		end
+	end
+end
 
 function Addons:vehicleDoors(flag)
     local ped = GetPlayerPed(-1)
@@ -26,9 +216,6 @@ function Addons:vehicleDoors(flag)
     end
 end
 
-
---Attach Entity to Player
-
 function Addons:setItemOnPlayer(item)
 				local cigar_name = item
 				local playerPed = PlayerPedId()
@@ -50,7 +237,6 @@ function Addons:setItemOnPlayer(item)
 	end	
 
 --Add Props
-
 function Addons:setPropSpike(prop)
     local ped = GetPlayerPed(-1)
     x, y, z = table.unpack(GetEntityCoords(ped, true))
@@ -178,6 +364,7 @@ function Addons:lockpickVehicle(wait,any)
 end
 
 
+--[[
 --LOCKin bank van
 function Addons:breakBankVan(wait)
     local pos = GetEntityCoords(GetPlayerPed(-1))
@@ -199,11 +386,11 @@ function Addons:breakBankVan(wait)
 			SetVehicleDoorOpen(vehicleHandle, 2, false)
             SetVehicleDoorOpen(vehicleHandle, 3, false)				
             ClearPedTasksImmediately(GetPlayerPed(-1))			
-		else 
-			self.remote.notClose()
+		else
+			vRP.EXT.Base:notify("The plasma cutter must touch the vehicle.") 
 	end
 end
-
+]]
 
  
 function  Addons:isPlayerNearModel(model,radius)
@@ -215,9 +402,6 @@ function  Addons:isPlayerNearModel(model,radius)
     return false
   end
 end  
-  
-
-
   
 -- play a screen effect
 -- name, see https://wiki.fivem.net/wiki/Screen_Effects
@@ -291,6 +475,7 @@ function Addons:resetMovement(fade)
   SetPedMotionBlur(GetPlayerPed(-1), false)
 end
 
+
 local holdingBoombox = false
 local boomModel = "prop_boombox_01"
 local boomanimDict = "missheistdocksprep1hold_cellphone"
@@ -337,11 +522,12 @@ function Addons:__construct()
     vRP.Extension.__construct(self)
 self.spikes = {}
 
-
+--spikes are too demanding doing it this way
+--[[
 --tire spikes	
 Citizen.CreateThread(function()
   while true do
-    Citizen.Wait(100)
+    Citizen.Wait(0)
     local ped = GetPlayerPed(-1)
     local veh = GetVehiclePedIsIn(ped, false)
     local vehCoord = GetEntityCoords(veh)
@@ -356,17 +542,15 @@ Citizen.CreateThread(function()
          SetVehicleTyreBurst(veh, 5, true, 1000.0)
          SetVehicleTyreBurst(veh, 6, true, 1000.0)
          SetVehicleTyreBurst(veh, 7, true, 1000.0)
-         self.removeSpikes() --deletes the spike
+         self:removeSpikes() --deletes the spike
 		 
      end
 	end
    end
 end)	
-	
+]]	
 
 end	
-
-
 
 
 
@@ -435,11 +619,21 @@ function Addons:isInAnyVehicle()
   end
 end 
 
+
+
+
 Addons.tunnel = {}
 
 
 
+Addons.tunnel.deleteVehicleInFrontOrInside = Addons.deleteVehicleInFrontOrInside
+--Addons.tunnel.showSprites = Addons.showSprites
+--Addons.tunnel.showBlips = Addons.showBlips
+Addons.tunnel.spawnVehicle = Addons.spawnVehicle
+Addons.tunnel.tpToWaypoint = Addons.tpToWaypoint
 Addons.tunnel.policeDrag = Addons.policeDrag
+Addons.tunnel.frontvehicleWindows = Addons.frontvehicleWindows
+Addons.tunnel.backvehicleWindows = Addons.backvehicleWindows
 Addons.tunnel.isPlayerNearModel = Addons.isPlayerNearModel
 Addons.tunnel.breakBankVan = Addons.breakBankVan
 Addons.tunnel.setItemOnPlayer = Addons.setItemOnPlayer

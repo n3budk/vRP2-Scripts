@@ -2,7 +2,6 @@
 
 local lang = {
 
-
 	item = { --Add these to items
 	    lighter = "lighter", --Item
 		rolly = "rolly", --Item	
@@ -18,6 +17,11 @@ local lang = {
 	
 	
 },
+	itemcheck = {
+		lockpick = "!aptitude.crime.crime.>4", --required aptitude for lockpicking
+		
+},
+
 
 	perms = {
 	    pol_props = "police_props", --Add to police to allow police extra menu	
@@ -118,7 +122,6 @@ local lang = {
 	},
 	fine = {
 		button = "Fine",
-		perm = "police.bmfine",
 		desc = "Fines a nearby player.",
 		prompt = {
 			amount = "Fine Value:",
