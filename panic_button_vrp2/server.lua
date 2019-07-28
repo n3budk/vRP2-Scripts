@@ -54,13 +54,7 @@ function PanicAlert.event:playerJoinGroup(user)
     end
 end
 
-function PanicAlert.event:characterLoad(user)
-        if user:hasPermission("police.market") then
-            self.remote._checkPermission(user.source, true)
-        else
-            self.remote._checkPermission(user.source, false)
-        end
-end
+
 
 -- TUNNEL
 PanicAlert.tunnel = {}
