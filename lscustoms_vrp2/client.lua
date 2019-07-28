@@ -51,6 +51,7 @@ local neon = {
 	cart = 	{left = false, right = false, front = false, back = false}
 }
 
+local fuel = 0
 
 function LsCustoms:__construct()
     vRP.Extension.__construct(self)
@@ -65,18 +66,24 @@ Citizen.CreateThread(function()
 				if DoesEntityExist(veh) and GetPedInVehicleSeat(veh, -1) == ped and not (IsThisModelAHeli(veh) or IsThisModelAPlane(veh)) then
 					for i=0,#shops do
 						local sh = shops[i]
-						if GetDistanceBetweenCoords(sh.coords.x,sh.coords.y,0,GetEntityCoords(ped)) <= 8 then
+						if GetDistanceBetweenCoords(sh.coords.x,sh.coords.y,sh.coords.z, GetEntityCoords(ped)) <= 8 then
 							if IsControlJustPressed(1,201) then
 								self.remote._ownedVhicleCheck() -- permission check for personal vehicle
 								vehPrice = defaultVehPrice
-								Citizen.Wait(500)
+								
+								Citizen.Wait(5)
 								if enterAllowed then
+								vehicle = GetVehiclePedIsIn(GetPlayerPed(-1))
+								fuel = GetVehicleFuelLevel(vehicle)
+								self.remote._fuelAmount(fuel)
 								self.remote.lockCar()
 								self.remote._killVState() --disable vehicle state, if not people can wait 1 min then exit to apply mods
+								self.remote._fuelUp()
 								garageNumber = i
 								buildMenu(sh.title)
 								end
 							else
+								self.remote._fuelUp()
 								SetTextCentre(1)
 								SetTextDropShadow()
 								SetTextEntry("STRING")
@@ -84,7 +91,6 @@ Citizen.CreateThread(function()
 								SetTextScale(1.0, 0.7)
 								SetTextColour(255,255,255,200)
 								AddTextComponentString(inviteText..""..sh.title)
-
 								DrawText(0.5, 0.85)
 							end
 						end
@@ -92,7 +98,7 @@ Citizen.CreateThread(function()
 				end
 			end
 		else
-			if GetDistanceBetweenCoords(shops[garageNumber].coords.x,shops[garageNumber].coords.y,0,GetEntityCoords(ped)) < 30 then
+			if GetDistanceBetweenCoords(shops[garageNumber].coords.x,shops[garageNumber].coords.y,shops[garageNumber].coords.z, GetEntityCoords(ped)) < 10 then
 				if IsControlJustPressed(1, controls.up) then
 					PlaySound(-1, "NAV_UP_DOWN", "HUD_FRONTEND_DEFAULT_SOUNDSET", 0, 0, 1)
 					if not confirmExit then
@@ -111,6 +117,7 @@ Citizen.CreateThread(function()
 						SendNUIMessage({command = "closeACMenu"})
 					else
 						SendNUIMessage({command = "selectACItem"})
+						self.remote._fuelUp()
 					end
 				end
 				if IsControlJustPressed(1, controls.back) then
@@ -145,6 +152,7 @@ end)
 
 
 function LsCustoms:installMods()
+self.remote._fuelUp()
 	self:installModsclient()
 	local licencePlate = GetVehicleNumberPlateText(veh)
 	local nl = {"off","off","off","off"}
@@ -209,6 +217,7 @@ function LsCustoms:revertMods()
 _exit(false)
 inUse = false
 disablemenu = false
+
 end
 
 function buildMenu(title)
@@ -411,7 +420,7 @@ function buildMenu(title)
 			end
 		elseif (iType == "pcol" or iType == "scol") --[[ and garageNumber == 0]] then
 			local extra = getExtra(i, 0, menuInfo[i].modID == 66 and customColourP.set.use or menuInfo[i].modID == 67 and customColourS.set.use);
-			SendNUIMessage({command = "addACItem", params = {par = i, act = "getCustomColour", lText = customColourText, _class = extra.class, rText = extra.text, cat = menuInfo[i].modID, prev = true}})
+			--SendNUIMessage({command = "addACItem", params = {par = i, act = "getCustomColour", lText = customColourText, _class = extra.class, rText = extra.text, cat = menuInfo[i].modID, prev = true}})
 		elseif iType == "pscol" or iType == "wcol" or iType == "mtlc" or iType == "incol" and (inter or menuInfo[i].set ~= 0) or iType == "dcol" and (dash or menuInfo[i].set ~= 0) then
 			for j = 1,#colInd.metallic do
 				local extra
@@ -509,7 +518,7 @@ function buildMenu(title)
 			end
 			--if garageNumber == 0 then
 				extra = getExtra(i, 0, custom)
-				SendNUIMessage({command = "addACItem", params = {par = i, act = "getCustomColour", lText = customColourText, _class = extra.class, rText = extra.text, cat = iType, prev = true}})
+				--SendNUIMessage({command = "addACItem", params = {par = i, act = "getCustomColour", lText = customColourText, _class = extra.class, rText = extra.text, cat = iType, prev = true}})
 			--end
 		elseif iType == "extra" then
 			for j = 1,#extras.set do
@@ -778,6 +787,7 @@ end
 function LsCustoms:applyClean()
 	SetVehicleFixed(veh)
 	SetVehicleDirtLevel(veh, 0.0)
+	self.remote._fuelUp()
 end	
 
 RegisterNUICallback("preview", function(data)
@@ -1026,17 +1036,23 @@ end)
 
 function LsCustoms:blockEnter(blockEnter)
 	enterAllowed = not blockEnter
-	
 end
 
 
+function LsCustoms:applyFuel(value)
+local vehicle = GetVehiclePedIsIn(GetPlayerPed(-1))
+if vehicle then
+SetVehicleFuelLevel(vehicle, value)
+   end
+	
+end
+	
 
 
 
 LsCustoms.tunnel = {}
 
-
-
+LsCustoms.tunnel.applyFuel = LsCustoms.applyFuel
 LsCustoms.tunnel.revertMods = LsCustoms.revertMods
 LsCustoms.tunnel.closeAC = LsCustoms.closeAC
 LsCustoms.tunnel.applyClean = LsCustoms.applyClean
