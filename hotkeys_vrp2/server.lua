@@ -6,30 +6,16 @@ function HotKeys:__construct()
 end
 
 
---Coming soon LOL
-
--- TUNNEL
 HotKeys.tunnel = {}
 
-function HotKeys.tunnel:docsOnline()
-  local docs = vRP.EXT.Group:getUsersByPermission("emergency.revive")
-  return #docs
-end
-
-function HotKeys.tunnel:helpComa(x,y,z)
-  vRP.EXT.Phone:sendServiceAlert("emergency",x,y,z,"Help! I've fallen and can't get up!")
-end
-
-
-function HotKeys.tunnel:isComa()
+function HotKeys.tunnel:lockPersonal()
 local user = vRP.users_by_source[source]
-local dead = vRP.EXT.Survival.remote._isInComa(user.source)
-if dead then
-return true 
-else 
-return false
+local model = vRP.EXT.Garage.remote.getNearestOwnedVehicle(user.source, 5)
+    if model then
+vRP.EXT.Garage.remote._vc_toggleLock(user.source, model)
 	end
 end
+
 
 
 vRP:registerExtension(HotKeys)

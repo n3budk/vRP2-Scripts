@@ -3,23 +3,35 @@
 cfg = {}
 
 cfg.hotkeys = {
---[[  [46] = { --not working
+
+[243] = { 
+    -- Lock Toggle ~
+    group = 1, 
+    pressed = function() 
+	vRP.EXT.HotKeys.remote._lockPersonal()
+    end,
+    released = function()
+	  -- Do nothing on release because it's toggle.
+    end,
+  },
+
+    [46] = {
     -- E call/skip emergency
     group = 0, 
 	pressed = function() 
-      local ped = GetPlayerPed(-1)
-      
-      local health = GetEntityHealth(ped)
-      if self.remote.isComa() then
-	    if called == 0 then
-		      local docs = self.remote._docsOnline()
-		        if docs == 0 then
-				  --vRP.EXT.Survival:killComa()
+	  if vRP.EXT.Survival:isInComa() then
+	    if called == 0 then 
+	      local skipper,caller = true --vRP.EXT.HotKeys.remote._canSkipComa() -- permission to skip when no Doc is online, or just call them when they are. Change them on client.lua too if you do
+		    if skipper or caller then
+		      local docs = vRP.EXT.HotKeys.remote._docsOnline()
+		        if docs == 0 and skipper then
+				  vRP.EXT.Survival:killComa()
 			    else
 				  called = 30
 				  local x,y,z = table.unpack(GetEntityCoords(GetPlayerPed(-1),true))
-				  self.remote._helpComa(x,y,z)
+				  vRP.EXT.HotKeys.remote._helpComa(x,y,z)
 				  Citizen.Wait(1000)
+			    end
             end
 		else
 		  vRP.EXT.Base:notify("~r~You already called the ambulance.")
@@ -30,12 +42,13 @@ cfg.hotkeys = {
 	  -- Do nothing on release because it's toggle.
 	end,
   },
---]]
+  
 [168] = { --works
     -- F6 Toggle Kneel Surrender
     group = 1, 
     pressed = function() 
-      if not IsPauseMenuActive() and not IsPedInAnyVehicle(GetPlayerPed(-1), true) then -- Comment to allow use in vehicle
+	local handcuffed = vRP.EXT.Police:isHandcuffed()
+      if not IsPauseMenuActive() and not IsPedInAnyVehicle(GetPlayerPed(-1), true) and not handcuffed then -- Comment to allow use in vehicle
         local player = GetPlayerPed( -1 )
         if ( DoesEntityExist( player ) and not IsEntityDead( player )) then 
             loadAnimDict( "random@arrests" )
@@ -65,7 +78,8 @@ cfg.hotkeys = {
     -- X toggle HandsUp
     group = 1, 
 	pressed = function() 
-      if not IsPauseMenuActive() and not IsPedInAnyVehicle(GetPlayerPed(-1), true) then -- Comment to allow use in vehicle
+		local handcuffed = vRP.EXT.Police:isHandcuffed()
+      if not IsPauseMenuActive() and not IsPedInAnyVehicle(GetPlayerPed(-1), true) and not handcuffed then -- Comment to allow use in vehicle
 			local ped = PlayerPedId()
 	
 			if ( DoesEntityExist( ped ) and not IsEntityDead( ped ) ) then
@@ -98,7 +112,8 @@ cfg.hotkeys = {
     -- B toggle Point
     group = 0, 
 	pressed = function() 
-      if not IsPauseMenuActive() and not IsPedInAnyVehicle(GetPlayerPed(-1), true) then  -- Comment to allow use in vehicle
+		local handcuffed = vRP.EXT.Police:isHandcuffed()
+      if not IsPauseMenuActive() and not IsPedInAnyVehicle(GetPlayerPed(-1), true) and not handcuffed then  -- Comment to allow use in vehicle
 		RequestAnimDict("anim@mp_point")
 		while not HasAnimDictLoaded("anim@mp_point") do
           Wait(0)
@@ -130,7 +145,8 @@ cfg.hotkeys = {
     -- CTRL toggle Crouch
     group = 0, 
 	pressed = function() 
-      if not IsPauseMenuActive() and not IsPedInAnyVehicle(GetPlayerPed(-1), true) then  -- Comment to allow use in vehicle
+	  local handcuffed = vRP.EXT.Police:isHandcuffed()
+      if not IsPauseMenuActive() and not IsPedInAnyVehicle(GetPlayerPed(-1), true) and not handcuffed then  -- Comment to allow use in vehicle
         RequestAnimSet("move_ped_crouched")
 		while not HasAnimSetLoaded("move_ped_crouched") do 
           Citizen.Wait(0)
@@ -147,11 +163,12 @@ cfg.hotkeys = {
 	  -- Do nothing on release because it's toggle.
 	end,
   },
-  [167] = { --F6 if not using surrender toggle
-    -- K toggle Vehicle Engine
+  [167] = {
+    -- F6 toggle Vehicle Engine
     group = 1, 
 	pressed = function() 
-      if not IsPauseMenuActive() and IsPedInAnyVehicle(GetPlayerPed(-1), false) then
+		local handcuffed = vRP.EXT.Police:isHandcuffed()
+      if not IsPauseMenuActive() and IsPedInAnyVehicle(GetPlayerPed(-1), false) and not handcuffed then
 		engine = not engine
 		SetVehicleEngineOn(GetVehiclePedIsIn(GetPlayerPed(-1), false), engine, false, false)
 	  end
@@ -164,7 +181,8 @@ cfg.hotkeys = {
     -- W starts Vehicle Engine
     group = 1, 
 	pressed = function() 
-      if not IsPauseMenuActive() and IsPedInAnyVehicle(GetPlayerPed(-1), false) then
+		local handcuffed = vRP.EXT.Police:isHandcuffed()
+      if not IsPauseMenuActive() and IsPedInAnyVehicle(GetPlayerPed(-1), false) and not handcuffed then
 		engine = true
 		SetVehicleEngineOn(GetVehiclePedIsIn(GetPlayerPed(-1), false), engine, false, false)
 	  end
@@ -173,6 +191,7 @@ cfg.hotkeys = {
 	  -- Do nothing on release because it's toggle.
 	end,
 	},
+	
 }
 
 
