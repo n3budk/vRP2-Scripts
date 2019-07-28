@@ -14,14 +14,11 @@ local lang = {
 		bbox = "boom_box", --Item		
 		lockpick = "lockpick", --Item	
 		cigs = "cigs", --Item
-	
-	
-},
-	itemcheck = {
-		lockpick = "!aptitude.crime.crime.>4", --required aptitude for lockpicking
 		
 },
-
+	itemcheck = {
+		lockpick = "!aptitude.crime.crime.>4", --required aptitude for lockpicking		
+},
 
 	perms = {
 	    pol_props = "police_props", --Add to police to allow police extra menu	

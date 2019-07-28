@@ -1,26 +1,13 @@
-local Addons = class("Addons", vRP.Extension)
+local AddonsV = class("AddonsV", vRP.Extension)
 
---[[
-mask = nil
-function Addons:togglePlayerMask()
-	local custom = vRP.EXT.PlayerState.remote.getCustomization()
-	if custom[1][1] == 0 then
-	  custom[1] = mask
-	else
-	  mask = custom[1]
-	  custom[1] = {0,0}
-	end
-	vRP.EXT.PlayerState.remote._setCustomization(custom)
-end
-]]
 
-function Addons:getVehicleInDirection( coordFrom, coordTo )
+function AddonsV:getVehicleInDirection( coordFrom, coordTo )
     local rayHandle = CastRayPointToPoint( coordFrom.x, coordFrom.y, coordFrom.z, coordTo.x, coordTo.y, coordTo.z, 10, GetPlayerPed( -1 ), 0 )
     local _, _, _, _, vehicle = GetRaycastResult( rayHandle )
     return vehicle
 end
 
-function Addons:getNearestVehicle(radius)
+function AddonsV:getNearestVehicle(radius)
     local x,y,z = table.unpack(GetEntityCoords(GetPlayerPed(-1),true))
     local ped = GetPlayerPed(-1)
     if IsPedSittingInAnyVehicle(ped) then
@@ -37,7 +24,7 @@ function Addons:getNearestVehicle(radius)
     end
 end
 
-function Addons:deleteVehicleInFrontOrInside(offset)
+function AddonsV:deleteVehicleInFrontOrInside(offset)
   local ped = GetPlayerPed(-1)
   local veh = nil
   if (IsPedSittingInAnyVehicle(ped)) then 
@@ -58,7 +45,7 @@ function Addons:deleteVehicleInFrontOrInside(offset)
 end
 
 
-function Addons:deleteNearestVehicle(radius)
+function AddonsV:deleteNearestVehicle(radius)
   local x,y,z = table.unpack(GetEntityCoords(GetPlayerPed(-1),true))
   local veh = self:getNearestVehicle(radius)
   
@@ -73,7 +60,7 @@ function Addons:deleteNearestVehicle(radius)
   end
 end
 
-function Addons:spawnVehicle(model) 
+function AddonsV:spawnVehicle(model) 
     local i = 0
     local mhash = GetHashKey(model)
     while not HasModelLoaded(mhash) and i < 1000 do
@@ -107,7 +94,32 @@ function Addons:spawnVehicle(model)
 	end
 end
 
-function Addons:tpToWaypoint()
+local isRadarExtended = false
+local showblip = false
+local showsprite = false
+
+function AddonsV:showBlips()
+	showblip = not showblip
+	if showblip then
+		showsprite = true
+		vRP.EXT.Base:notify("Blips on") -- lang.blips.off()
+	else
+		showsprite = false
+		vRP.EXT.Base:notify("Blips off") -- lang.blips.off()
+	end
+end
+
+function AddonsV:showSprites()
+	showsprite = not showsprite
+	if showsprite then
+		vRP.EXT.Base:notify("Sprites on") -- lang.sprites.off()
+	else
+		vRP.EXT.Base:notify("Sprites off") -- lang.sprites.off()
+	end
+end
+
+
+function AddonsV:tpToWaypoint()
 
 	local targetPed = GetPlayerPed(-1)
 	local targetVeh = GetVehiclePedIsUsing(targetPed)
@@ -151,7 +163,7 @@ end
 
 
 local fwindowup = true
-function Addons:frontvehicleWindows()
+function AddonsV:frontvehicleWindows()
     local playerPed = GetPlayerPed(-1)
     if IsPedInAnyVehicle(playerPed, false) then
         local playerCar = GetVehiclePedIsIn(playerPed, false)
@@ -172,7 +184,7 @@ function Addons:frontvehicleWindows()
 end
 
 local bwindowup = true
-function Addons:backvehicleWindows()
+function AddonsV:backvehicleWindows()
     local playerPed = GetPlayerPed(-1)
     if IsPedInAnyVehicle(playerPed, false) then
         local playerCar = GetVehiclePedIsIn(playerPed, false)
@@ -192,7 +204,7 @@ function Addons:backvehicleWindows()
 	end
 end
 
-function Addons:vehicleDoors(flag)
+function AddonsV:vehicleDoors(flag)
     local ped = GetPlayerPed(-1)
     local veh = GetVehiclePedIsUsing(ped)
     local vehLast = GetPlayersLastVehicle()
@@ -216,7 +228,10 @@ function Addons:vehicleDoors(flag)
     end
 end
 
-function Addons:setItemOnPlayer(item)
+
+--Attach Entity to Player
+
+function AddonsV:setItemOnPlayer(item)
 				local cigar_name = item
 				local playerPed = PlayerPedId()
 				
@@ -237,7 +252,8 @@ function Addons:setItemOnPlayer(item)
 	end	
 
 --Add Props
-function Addons:setPropSpike(prop)
+
+function AddonsV:setPropSpike(prop)
     local ped = GetPlayerPed(-1)
     x, y, z = table.unpack(GetEntityCoords(ped, true))
 	h = GetEntityHeading(ped)
@@ -255,7 +271,7 @@ function Addons:setPropSpike(prop)
     SetEntityHeading(object,heading)
 end
 
-function Addons:setPropBarrier(prop)
+function AddonsV:setPropBarrier(prop)
     local ped = GetPlayerPed(-1)
     x, y, z = table.unpack(GetEntityCoords(ped, true))
 	h = GetEntityHeading(ped)
@@ -274,7 +290,7 @@ function Addons:setPropBarrier(prop)
     FreezeEntityPosition(object, true)
 end
 
-function Addons:setProp(prop)
+function AddonsV:setProp(prop)
     local ped = GetPlayerPed(-1)
     x, y, z = table.unpack(GetEntityCoords(ped, true))
 	h = GetEntityHeading(ped)
@@ -294,7 +310,7 @@ function Addons:setProp(prop)
 end
 
 
-function Addons:closeProp(prop)
+function AddonsV:closeProp(prop)
     local ped = GetPlayerPed(-1)
     x, y, z = table.unpack(GetEntityCoords(ped, true))
 	ox, oy, oz = table.unpack(GetOffsetFromEntityInWorldCoords(ped, 0.0, 1.0, -2.0))
@@ -305,7 +321,7 @@ function Addons:closeProp(prop)
 	end
 end
 
-function Addons:removeProp(prop)
+function AddonsV:removeProp(prop)
     local ped = GetPlayerPed(-1)
     x, y, z = table.unpack(GetEntityCoords(ped, true))
 	ox, oy, oz = table.unpack(GetOffsetFromEntityInWorldCoords(ped, 0.0, 1.0, 0.0))
@@ -316,7 +332,7 @@ function Addons:removeProp(prop)
 	end
 end
 
-function Addons:removeSpikes()
+function AddonsV:removeSpikes()
     local prop = "P_ld_stinger_s"
     local ped = GetPlayerPed(-1)
     x, y, z = table.unpack(GetEntityCoords(ped, true))
@@ -329,7 +345,7 @@ function Addons:removeSpikes()
 end
 
 --LOCK PICK MENU
-function Addons:lockpickVehicle(wait,any)
+function AddonsV:lockpickVehicle(wait,any)
 		local pos = GetEntityCoords(GetPlayerPed(-1))
 		local entityWorld = GetOffsetFromEntityInWorldCoords(GetPlayerPed(-1), 0.0, 20.0, 0.0)
 
@@ -364,9 +380,8 @@ function Addons:lockpickVehicle(wait,any)
 end
 
 
---[[
 --LOCKin bank van
-function Addons:breakBankVan(wait)
+function AddonsV:breakBankVan(wait)
     local pos = GetEntityCoords(GetPlayerPed(-1))
     local entityWorld = GetOffsetFromEntityInWorldCoords(GetPlayerPed(-1), 0.0, 20.0, 0.0)
     local rayHandle = CastRayPointToPoint(pos.x, pos.y, pos.z, entityWorld.x, entityWorld.y, entityWorld.z, 10, GetPlayerPed(-1), 0)
@@ -386,14 +401,14 @@ function Addons:breakBankVan(wait)
 			SetVehicleDoorOpen(vehicleHandle, 2, false)
             SetVehicleDoorOpen(vehicleHandle, 3, false)				
             ClearPedTasksImmediately(GetPlayerPed(-1))			
-		else
+		else 
 			vRP.EXT.Base:notify("The plasma cutter must touch the vehicle.") 
 	end
 end
-]]
+
 
  
-function  Addons:isPlayerNearModel(model,radius)
+function  AddonsV:isPlayerNearModel(model,radius)
   local x,y,z = table.unpack(GetEntityCoords(GetPlayerPed(-1),true))
   local v = GetClosestVehicle( x+0.0001, y+0.0001, z+0.0001,radius+0.0001,GetHashKey(model),70)
   if IsVehicleModel(v, GetHashKey(model)) then
@@ -403,10 +418,13 @@ function  Addons:isPlayerNearModel(model,radius)
   end
 end  
   
+
+
+  
 -- play a screen effect
 -- name, see https://wiki.fivem.net/wiki/Screen_Effects
 -- duration: in seconds, if -1, will play until stopScreenEffect is called
-function Addons:playScreenEffect(name, duration)
+function AddonsV:playScreenEffect(name, duration)
   if duration < 0 then -- loop
     StartScreenEffect(name, 0, true)
   else
@@ -421,12 +439,12 @@ end
 
 -- stop a screen effect
 -- name, see https://wiki.fivem.net/wiki/Screen_Effects
-function Addons:stopScreenEffect(name)
+function AddonsV:stopScreenEffect(name)
   StopScreenEffect(name)
 end
 
 -- MOVEMENT CLIPSET
-function Addons:playMovement(clipset,blur,drunk,fade,clear)
+function AddonsV:playMovement(clipset,blur,drunk,fade,clear)
   --request anim
   RequestAnimSet(clipset)
   while not HasAnimSetLoaded(clipset) do
@@ -460,7 +478,7 @@ function Addons:playMovement(clipset,blur,drunk,fade,clear)
   
 end
 
-function Addons:resetMovement(fade)
+function AddonsV:resetMovement(fade)
   -- fade
   if fade then
     DoScreenFadeOut(1000)
@@ -475,14 +493,13 @@ function Addons:resetMovement(fade)
   SetPedMotionBlur(GetPlayerPed(-1), false)
 end
 
-
 local holdingBoombox = false
 local boomModel = "prop_boombox_01"
 local boomanimDict = "missheistdocksprep1hold_cellphone"
 local boomanimName = "hold_cellphone"
 local bag_net = nil
 
-    function Addons:startBoomBox()
+    function AddonsV:startBoomBox()
         if not holdingBoombox then
             RequestModel(GetHashKey(boomModel))
 
@@ -518,39 +535,8 @@ local bag_net = nil
     end
 end
 
-function Addons:__construct()
+function AddonsV:__construct()
     vRP.Extension.__construct(self)
-self.spikes = {}
-
---spikes are too demanding doing it this way
---[[
---tire spikes	
-Citizen.CreateThread(function()
-  while true do
-    Citizen.Wait(0)
-    local ped = GetPlayerPed(-1)
-    local veh = GetVehiclePedIsIn(ped, false)
-    local vehCoord = GetEntityCoords(veh)
-    if IsPedInAnyVehicle(ped, false) then
-	self.remote._removeSpike() --Removed it as deployed on users server side
-    if DoesObjectOfTypeExistAtCoords(vehCoord["x"], vehCoord["y"], vehCoord["z"], 0.9, GetHashKey("P_ld_stinger_s"), true) then
-         SetVehicleTyreBurst(veh, 0, true, 1000.0)
-         SetVehicleTyreBurst(veh, 1, true, 1000.0)
-         SetVehicleTyreBurst(veh, 2, true, 1000.0)
-         SetVehicleTyreBurst(veh, 3, true, 1000.0)
-         SetVehicleTyreBurst(veh, 4, true, 1000.0)
-         SetVehicleTyreBurst(veh, 5, true, 1000.0)
-         SetVehicleTyreBurst(veh, 6, true, 1000.0)
-         SetVehicleTyreBurst(veh, 7, true, 1000.0)
-         self:removeSpikes() --deletes the spike
-		 
-     end
-	end
-   end
-end)	
-]]	
-
-end	
 
 
 
@@ -574,7 +560,13 @@ Citizen.CreateThread(function()
     end
 end)
 
-function Addons:IsPedInAnyHeli()
+end	
+
+
+
+
+
+function AddonsV:IsPedInAnyHeli()
   if IsPedInAnyHeli(GetPlayerPed(-1)) then
 	return true
   else
@@ -582,7 +574,7 @@ function Addons:IsPedInAnyHeli()
   end
 end
 
-function Addons:IsPedInAnyPlane()
+function AddonsV:IsPedInAnyPlane()
   if IsPedInAnyPlane(GetPlayerPed(-1)) then
 	return true
   else
@@ -590,20 +582,20 @@ function Addons:IsPedInAnyPlane()
   end
 end
 
-function Addons:freezePed(flag)
+function AddonsV:freezePed(flag)
   FreezeEntityPosition(GetPlayerPed(-1),flag)
 end
 
-function Addons:lockPedVehicle(flag)
+function AddonsV:lockPedVehicle(flag)
 SetVehicleDoorsLocked(GetVehiclePedIsIn(GetPlayerPed(-1),false),flag)
 end
 
 
-function Addons:freezePedVehicle(flag)
+function AddonsV:freezePedVehicle(flag)
   FreezeEntityPosition(GetVehiclePedIsIn(GetPlayerPed(-1),false),flag)
 end
 
-function Addons:isPlayerInVehicleModel(model)
+function AddonsV:isPlayerInVehicleModel(model)
   if (IsVehicleModel(GetVehiclePedIsUsing(GetPlayerPed(-1)), GetHashKey(model))) then -- just a function you can use to see if your player is in a taxi or any other car model (use the tunnel)
     return true
   else
@@ -611,7 +603,7 @@ function Addons:isPlayerInVehicleModel(model)
   end
 end
 
-function Addons:isInAnyVehicle()
+function AddonsV:isInAnyVehicle()
   if IsPedInAnyVehicle(GetPlayerPed(-1)) then
 	return true
   else
@@ -622,44 +614,43 @@ end
 
 
 
-Addons.tunnel = {}
+AddonsV.tunnel = {}
 
 
 
-Addons.tunnel.deleteVehicleInFrontOrInside = Addons.deleteVehicleInFrontOrInside
---Addons.tunnel.showSprites = Addons.showSprites
---Addons.tunnel.showBlips = Addons.showBlips
-Addons.tunnel.spawnVehicle = Addons.spawnVehicle
-Addons.tunnel.tpToWaypoint = Addons.tpToWaypoint
-Addons.tunnel.policeDrag = Addons.policeDrag
-Addons.tunnel.frontvehicleWindows = Addons.frontvehicleWindows
-Addons.tunnel.backvehicleWindows = Addons.backvehicleWindows
-Addons.tunnel.isPlayerNearModel = Addons.isPlayerNearModel
-Addons.tunnel.breakBankVan = Addons.breakBankVan
-Addons.tunnel.setItemOnPlayer = Addons.setItemOnPlayer
-Addons.tunnel.vehicleDoors = Addons.vehicleDoors
-Addons.tunnel.lockPedVehicle = Addons.lockPedVehicle
-Addons.tunnel.IsPedInAnyHeli = Addons.IsPedInAnyHeli
-Addons.tunnel.IsPedInAnyPlane = Addons.IsPedInAnyPlane
-Addons.tunnel.freezePed = Addons.freezePed
-Addons.tunnel.freezePedVehicle = Addons.freezePedVehicle --eg for Client Mission = VRP.EXT.Mission.remote._isInAnyVehicle(user.source,true)
-Addons.tunnel.isPlayerInVehicleModel = Addons.isPlayerInVehicleModel
-Addons.tunnel.isInAnyVehicle = Addons.isInAnyVehicle
+AddonsV.tunnel.deleteVehicleInFrontOrInside = AddonsV.deleteVehicleInFrontOrInside
 
-Addons.tunnel.startBoomBox = Addons.startBoomBox
-Addons.tunnel.setPropBarrier = Addons.setPropBarrier
-Addons.tunnel.setPropSpike = Addons.setPropSpike
-Addons.tunnel.setProp = Addons.setProp
-Addons.tunnel.closeProp = Addons.closeProp	
-Addons.tunnel.removeProp = Addons.removeProp
-Addons.tunnel.lockpickVehicle = Addons.lockpickVehicle
-Addons.tunnel.playScreenEffect = Addons.playScreenEffect
-Addons.tunnel.stopScreenEffect = Addons.stopScreenEffect
-Addons.tunnel.playMovement = Addons.playMovement
-Addons.tunnel.resetMovement = Addons.resetMovement
+AddonsV.tunnel.spawnVehicle = AddonsV.spawnVehicle
+AddonsV.tunnel.tpToWaypoint = AddonsV.tpToWaypoint
+
+AddonsV.tunnel.frontvehicleWindows = AddonsV.frontvehicleWindows
+AddonsV.tunnel.backvehicleWindows = AddonsV.backvehicleWindows
+AddonsV.tunnel.isPlayerNearModel = AddonsV.isPlayerNearModel
+AddonsV.tunnel.breakBankVan = AddonsV.breakBankVan
+AddonsV.tunnel.setItemOnPlayer = AddonsV.setItemOnPlayer
+AddonsV.tunnel.vehicleDoors = AddonsV.vehicleDoors
+AddonsV.tunnel.lockPedVehicle = AddonsV.lockPedVehicle
+AddonsV.tunnel.IsPedInAnyHeli = AddonsV.IsPedInAnyHeli
+AddonsV.tunnel.IsPedInAnyPlane = AddonsV.IsPedInAnyPlane
+AddonsV.tunnel.freezePed = AddonsV.freezePed
+AddonsV.tunnel.freezePedVehicle = AddonsV.freezePedVehicle --eg for Client Mission = VRP.EXT.Mission.remote._isInAnyVehicle(user.source,true)
+AddonsV.tunnel.isPlayerInVehicleModel = AddonsV.isPlayerInVehicleModel
+AddonsV.tunnel.isInAnyVehicle = AddonsV.isInAnyVehicle
+
+AddonsV.tunnel.startBoomBox = AddonsV.startBoomBox
+AddonsV.tunnel.setPropBarrier = AddonsV.setPropBarrier
+AddonsV.tunnel.setPropSpike = AddonsV.setPropSpike
+AddonsV.tunnel.setProp = AddonsV.setProp
+AddonsV.tunnel.closeProp = AddonsV.closeProp	
+AddonsV.tunnel.removeProp = AddonsV.removeProp
+AddonsV.tunnel.lockpickVehicle = AddonsV.lockpickVehicle
+AddonsV.tunnel.playScreenEffect = AddonsV.playScreenEffect
+AddonsV.tunnel.stopScreenEffect = AddonsV.stopScreenEffect
+AddonsV.tunnel.playMovement = AddonsV.playMovement
+AddonsV.tunnel.resetMovement = AddonsV.resetMovement
 
 
 
 	
-vRP:registerExtension(Addons)	
+vRP:registerExtension(AddonsV)	
 	

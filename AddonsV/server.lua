@@ -8,25 +8,12 @@ Lang = Luang()
 
 Lang:loadLocale(lcfg.lang, module("vrp", "cfg/lang/"..lcfg.lang) or {})
 
-Lang:loadLocale(lcfg.lang, module("addons_vrp2", "lang/"..lcfg.lang) or {})
+Lang:loadLocale(lcfg.lang, module("AddonsV", "lang/"..lcfg.lang) or {})
 lang = Lang.lang[lcfg.lang]
 
 
 
-local Addons = class("Addons", vRP.Extension)
-
-Addons_WebHook = "ADD_WEB_HOOK_HERE" --This is for jail log to discord fines, jail, etc...
-Addons_joinWebHook = "INCERT_WEBHOOK_HERE" ---Join vRP Loading ID and Name into server Log WEBHOOK Log for Discord
-
-	local date = os.date('*t')
-	
-	if date.day < 10 then date.day = '0' .. tostring(date.day) end
-	if date.month < 10 then date.month = '0' .. tostring(date.month) end
-	if date.hour < 10 then date.hour = '0' .. tostring(date.hour) end
-	if date.min < 10 then date.min = '0' .. tostring(date.min) end
-	if date.sec < 10 then date.sec = '0' .. tostring(date.sec) end
-	local maindate = "" .. date.day .. "." .. date.month .. "." .. date.year .. " - " .. date.hour .. ":" .. date.min .. ":" .. date.sec .. ""
-
+local AddonsV = class("AddonsV", vRP.Extension)
 
 
 --Mobile Police Computer
@@ -224,7 +211,7 @@ end
         local user = menu.user
         menu.title = "Police Objects"
         menu.css.header_color = "rgba(0,125,255,0.75)"
-        --menu:addOption("Spike", ch_spikes, "Deploy spike strips.") --removed spikes as they are too demanding
+        --menu:addOption("Spike", ch_spikes, "Deploy spike strips.")
         menu:addOption("Barrier", ch_barrier, "Deploy a barrier.")	
         menu:addOption("Big Cone", ch_bcone, "Deploy a large traffic cone.")
         menu:addOption("Small Cone", ch_scone, "Deploy a small traffic cone.")	
@@ -253,13 +240,14 @@ end
 
 -- menu: Player menu
 local function menu_player(self)
-
   local function ch_users(menu, id)
-    menu.user:openMenu("users", {id = id})
+  local user = menu.user
+    user:openMenu("users", {id = id})
   end
 
 vRP.EXT.GUI:registerMenuBuilder("player", function(menu)
-	if menu.user:hasPermission(lang.perms.plist()) then
+    local user = menu.user
+	if user:hasPermission(lang.perms.plist()) then
     menu.title = "Player List"
 	menu:addOption("Player List", ch_users)
 	end		
@@ -296,10 +284,13 @@ local function m_fine(menu)
                         user:insertPoliceRecord(nuser.source, lang.police.menu.fine.record({reason,fine}))
                         vRP.EXT.Base.remote._notify(user.source, lang.police.menu.fine.fined({reason,fine}))
                         vRP.EXT.Base.remote._notify(nuser.source, lang.police.menu.fine.notify_fined({reason,fine}))
+						
+
                         user:closeMenu()
 						
 						local message = "**Police Event**\n**Type:** `User was Fined` \n**Officer ID: ** `"..user.id.."`\n**Citizen ID: ** `"..nuser.id.. "`\n**Total Amount:** `$"..fine.."`\n**Offense:** `$"..reason.."` ```ini\n" ..maindate.."```"
-						--PerformHttpRequest(Addons_WebHook, function(err, text, headers) end, 'POST', json.encode({username = name, content = message}), { ['Content-Type'] = 'application/json' })
+						
+					PerformHttpRequest(AddonsV_WebHook, function(err, text, headers) end, 'POST', json.encode({username = name, content = message}), { ['Content-Type'] = 'application/json' })
                     end
                 else
                     vRP.EXT.Base.remote._notify(user.source, lang.common.invalid_value())
@@ -321,8 +312,7 @@ unjailed = {}
 local function menu_dynamicjail(self)
 
 local function ch_jail(menu)
-    local user = menu.user
-    local tuser = menu.user.id	
+    local user = menu.user	
 	
 	local nuser
     local nplayer = vRP.EXT.Base.remote.getNearestPlayer(user.source, 5)
@@ -349,8 +339,11 @@ local function ch_jail(menu)
                 jail_clock(tonumber(nuser.id), tonumber(jail_time))
 					
 					local message = "**Police Event**\n**Type:** `User sent to Prison` \n**Officer ID: ** `"..user.id.."`\n**Prisoner ID: ** `"..nuser.id.. "`\n**Total Time:** `"..jail_time.." minutes.` ```ini\n" ..maindate.."```"
-					--PerformHttpRequest(Addons_WebHook, function(err, text, headers) end, 'POST', json.encode({username = name, content = message}), { ['Content-Type'] = 'application/json' })
+					
+					PerformHttpRequest(AddonsV_WebHook, function(err, text, headers) end, 'POST', json.encode({username = name, content = message}), { ['Content-Type'] = 'application/json' })
 
+				
+                --self.logInfoToFile(lang.jail.file(), lang.jail.log({user.id, nuser.id, jail_time}))
 		    end	
        else
             vRP.EXT.Base.remote._notify(user.source, "No player near")			
@@ -379,9 +372,11 @@ local function ch_unjail(menu)
                         vRP.EXT.Base.remote._notify(user.source, lang.unjail.released())
                         vRP.EXT.Base.remote._notify(nuser.source, lang.unjail.lowered())						
 					
-					local message = "**Police Event**\n**Type:** `Prisoner Released` \n**Officer ID: ** `"..user.id.."`\n**Prisoner ID: ** `"..nuser.id.. "`\n**Time Remaining:** `"..custom.." minutes remaining.` ```ini\n" ..maindate.."```"		
-					--PerformHttpRequest(Addons_WebHook, function(err, text, headers) end, 'POST', json.encode({username = name, content = message}), { ['Content-Type'] = 'application/json' })
+					local message = "**Police Event**\n**Type:** `Prisoner Released` \n**Officer ID: ** `"..user.id.."`\n**Prisoner ID: ** `"..nuser.id.. "`\n**Time Remaining:** `"..custom.." minutes remaining.` ```ini\n" ..maindate.."```"
+							
+					PerformHttpRequest(AddonsV_WebHook, function(err, text, headers) end, 'POST', json.encode({username = name, content = message}), { ['Content-Type'] = 'application/json' })
 						
+                        --self.logInfoToFile(lang.unjail.file(), lang.unjail.log({user.id, target, custom}))
 					end
                 else
                     vRP.EXT.Base.remote._notify(user.source, lang.common.invalid_value())
@@ -548,8 +543,8 @@ local function menu_consumable(self)
 local function ch_cigs(menu)
     local user = menu.user
 
-	if user:hasPermission("!item."..lang.item.cigs()..".>0") and user:hasPermission("!item."..lang.item.lighter()..".>0") then
-		user:tryTakeItem(lang.items.cigs(), 1)
+	if user:hasPermission("!item.cigs.>0") and user:hasPermission("!item.lighter.>0") then
+		user:tryTakeItem("cigs", 1)
 
         vRP.EXT.Survival.remote._varyHealth(user.source, 25)
         vRP.EXT.Base.remote._notify(user.source, "~g~Smoking a cig.")
@@ -567,8 +562,8 @@ end
 local function ch_weed(menu)
     local user = menu.user
 
-	if user:hasPermission("!item."..lang.item.lighter()..".>0") and user:hasPermission("!item."..lang.item.rolly()..".>0") and user:hasPermission("!item."..lang.item.weed()..".>0") then 
-		user:tryTakeItem(lang.items.rolly(),1) user:tryTakeItem(lang.item.weed(),1)
+	if user:hasPermission("!item.lighter.>0") and user:hasPermission("!item.rolly.>0") and user:hasPermission("!item.weed.>0") then 
+		user:tryTakeItem("rolly",1) user:tryTakeItem("weed",1)
         vRP.EXT.Survival.remote._varyHealth(user.source, 25)
         vRP.EXT.Base.remote._notify(user.source, "~g~Smoking weed.")
         local seq = {{"mp_player_int_uppersmoke", "mp_player_int_smoke_enter", 1}, {"mp_player_int_uppersmoke", "mp_player_int_smoke", 1}, {"mp_player_int_uppersmoke", "mp_player_int_smoke", 1}, {"mp_player_int_uppersmoke", "mp_player_int_smoke", 1}, {"mp_player_int_uppersmoke", "mp_player_int_smoke_exit", 1}}
@@ -589,7 +584,7 @@ end
 local function ch_vodka(menu)
     local user = menu.user
 
-          if user:tryTakeItem("edible|vodka",1) then
+          if user:tryTakeItem("vodka",1) then
             user:varyVital("food",30)
             user:varyVital("water",30)
   		    vRP.EXT.Survival.remote._varyHealth(user.source, 25)
@@ -616,8 +611,8 @@ end
 local function ch_meth(menu)
     local user = menu.user
 
-	if user:hasPermission("!item."..lang.item.meth()..".>0") and user:hasPermission("!item."..lang.item.lighter()..".>0") and user:hasPermission("!item."..lang.item.methpipe()..".>0") then 
-		user:tryTakeItem(lang.items.meth(),1)
+	if user:hasPermission("!item.meth.>0") and user:hasPermission("!item.lighter.>0") and user:hasPermission("!item.methpipe.>0") then 
+		user:tryTakeItem("meth",1)
         vRP.EXT.Survival.remote._varyHealth(user.source, 25)
         vRP.EXT.Base.remote._notify(user.source, "~g~Smoking meth.")
             local seq = {
@@ -644,8 +639,8 @@ end
 local function ch_lsd(menu)
     local user = menu.user
 
-	if user:hasPermission("!item."..lang.item.lsd()..".>0") then 
-		user:tryTakeItem(lang.items.lsd(),1)
+	if user:hasPermission("!item.lsd.>0") then 
+		user:tryTakeItem("lsd",1)
         vRP.EXT.Survival.remote._varyHealth(user.source, 25)
         vRP.EXT.Base.remote._notify(user.source, "~g~Taking a hit of LSD.")
             local seq = {
@@ -676,7 +671,7 @@ localbox = false
     local function m_localboom(menu)
         local user = menu.user
 
-	if user:hasPermission("!item."..lang.item.bbox()..".>0") or user:hasPermission(lang.perms.nobbox()) then	
+	if user:hasPermission("!item.bbox.>0") or user:hasPermission(lang.perms.nobbox()) then	
 		
         if not globalbox then
             localbox = true
@@ -694,7 +689,7 @@ localbox = false
 
         if user:hasPermission(lang.perms.bbox()) then		
 		
-	if user:hasPermission("!item."..lang.item.bbox()..".>0") or user:hasPermission(lang.perms.nobbox()) then			
+	if user:hasPermission("!item.bbox.>0") or user:hasPermission(lang.perms.nobbox()) then			
             if not localbox then
                 globalbox = true
                 self.remote.startBoomBox(user.source)
@@ -716,7 +711,7 @@ localbox = false
 -- Lockpick vehicle
 local function m_lockpickveh(menu)
     local user = menu.user
-    if user:tryTakeItem(lang.item.lockpick(), 1, true) or user:hasPermission("item.bypass") then
+    if user:tryTakeItem("lockpick", 1, true) or user:hasPermission("item.bypass") then
         self.remote.lockpickVehicle(user.source, 20, true)
 		else
 		 vRP.EXT.Base.remote._notify(user.source, "~r~No lockpick in inventory")
@@ -748,7 +743,11 @@ end
 
   local function ch_do_vodka(args,menu)
                   menu:addOption("Drink", ch_vodka, "Take a Swig of Vodka")
-  end     
+  end  
+  
+ -- local function ch_do_coke(args,menu)
+                 --menu:addOption("Cocaine", ch_coke, "Not in yet")
+ -- end    
   
   local function ch_do_lsd(args,menu)
                    menu:addOption("Consume", ch_lsd, "Take a hit of lsd")
@@ -798,8 +797,8 @@ local addon_items= {
     },
       ["cigs"] = { name = "Cigarettes", desc = "Can cause cancer", choices = ch_do_cigs, weight = 0.01
     },	
-      --["plasmacutter"] = { name = "Plasma Cutter", desc = "Unlocks Bank Vans", choices = m_ch_breakvan, weight = 1.25
-    --},		
+      ["plasmacutter"] = { name = "Plasma Cutter", desc = "Unlocks Bank Vans", choices = m_ch_breakvan, weight = 1.25
+    },		
 }  
   
     for k,v in pairs(addon_items) do
@@ -809,12 +808,9 @@ local addon_items= {
 end
 
 	
-function Addons:__construct()
+function AddonsV:__construct()
     vRP.Extension.__construct(self)
-
---self.spikes = {}
-	
- 
+  
     menu_vehicledoors(self)	
     menu_dynamicjail(self)
     menu_player(self)
@@ -823,6 +819,7 @@ function Addons:__construct()
     menu_consumable(self)
     menu_computer(self)
 
+	
 --- toggle blips
 local function m_delveh(menu)
     local user = menu.user
@@ -839,7 +836,6 @@ local function m_spawnveh(menu)
 		vRP.EXT.Base.remote._notify(user.source,"Invalid")
 	  end
 end
-	
 
 local function m_tp(menu)
     local user = menu.user
@@ -848,12 +844,13 @@ end
 
 
 vRP.EXT.GUI:registerMenuBuilder("admin", function(menu)
-local user = vRP.users_by_source[source]
+    local user = menu.user
 if user:hasPermission("admin.extras") then
         menu:addOption("TP to Waypoint", m_tp)
 		menu:addOption("Spawn Vehicle", m_spawnveh)
 		menu:addOption("Delete Vehicle", m_delveh)		
-			
+		
+		
 		end
 end)
 
@@ -861,16 +858,18 @@ end)
 --Fines
 
     vRP.EXT.GUI:registerMenuBuilder("police", function(menu)
+	    local user = menu.user
         menu:addOption("Dynamic Fine", m_fine)
     end)	
 	
 --Vehicle Doors
     local function m_doors(menu)
-        local user = menu.user
-            menu.user:openMenu("vehicledoors")
+	    local user = menu.user
+            user:openMenu("vehicledoors")
         end
 
     vRP.EXT.GUI:registerMenuBuilder("vehicle", function(menu)
+	    local user = menu.user
         menu:addOption("Doors & Windows", m_doors)
     end)
 
@@ -878,11 +877,12 @@ end)
 --Player
 --Players Menu
     local function ch_players(menu)
-        local user = menu.user
-        menu.user:openMenu("player")
+	    local user = menu.user
+        user:openMenu("player")
     end	
 	
     vRP.EXT.GUI:registerMenuBuilder("main", function(menu)
+	    local user = menu.user
         menu:addOption("Player", ch_players)
 
     end)	
@@ -890,24 +890,26 @@ end)
 	
 --Jail in Mobile PC
     local function ch_mjail(menu)
-        local user = menu.user
-        menu.user:openMenu("dynamicjail")
+	    local user = menu.user
+        user:openMenu("dynamicjail")
     end	
 	
     vRP.EXT.GUI:registerMenuBuilder("police_pc", function(menu)
-	    if menu.user:hasPermission(lang.perms.jailer()) then
+	    local user = menu.user
+	    if user:hasPermission(lang.perms.jailer()) then
         menu:addOption(lang.jail.menu(), ch_mjail)
 		end
     end)
 
 --Jail in police menu
     local function ch_mjail(menu)
-        local user = menu.user
-        menu.user:openMenu("dynamicjail")
+	    local user = menu.user
+        user:openMenu("dynamicjail")
     end	
 	
     vRP.EXT.GUI:registerMenuBuilder("police", function(menu)
-	    if menu.user:hasPermission(lang.perms.jailer_mobile()) then --mobile prison options for admin/mod
+	    local user = menu.user
+	    if user:hasPermission(lang.perms.jailer_mobile()) then --mobile prison options for admin/mod
         menu:addOption(lang.jail.menu(), ch_mjail)
 		end
     end)	
@@ -915,12 +917,13 @@ end)
 		
 --Deployable Police Items	
     local function ch_police(menu)
-        local user = menu.user
-        menu.user:openMenu("deployable")
+	    local user = menu.user
+        user:openMenu("deployable")
     end	
 	
     vRP.EXT.GUI:registerMenuBuilder("police", function(menu)
-		if menu.user:hasPermission(lang.perms.pol_props()) then
+	    local user = menu.user
+		if user:hasPermission(lang.perms.pol_props()) then
         menu:addOption(lang.police.extras(), ch_police)
 		end
     end)	
@@ -928,58 +931,8 @@ end)
 
 end
 
-
-function Addons.takePick()
-local user = vRP.users_by_source[source]
-user:tryTakeItem(lang.item.lockpick(), 1, false)
-end
-		
--- EVENT
-Addons.event = {}
-
-		
-function Addons.event:playerSpawn(user, first_spawn)
-    if first_spawn then
-        if user and user:isReady() then
-		local message = "```css\n"..GetPlayerName(user.source).." Loaded - ID:"..user.id.."```"
-		--PerformHttpRequest(Addons_joinWebHook, function(err, text, headers) end, 'POST', json.encode({username = name, content = message}), { ['Content-Type'] = 'application/json' })
-		SetTimeout(25000, function()		
-  	    local custom = {}
-            local value = vRP:getUData(user.id, "vRP:jail:time")
-
-            if value ~= nil then
-                custom = json.decode(value)
-
-                if custom ~= nil then
-                    if tonumber(custom) > 0 then
-						local audio = lang.jail.audio()
-						vRP.EXT.Audio.remote._playAudioSource(user.source, audio, 0.3, x,y,z, 15)
-						vRP.EXT.Police.remote._setHandcuffed(user.source, true)
-                        vRP.EXT.Base.remote._teleport(user.source, 1641.5477294922, 2570.4819335938, 45.564788818359) -- teleport inside jail
-						user:setVital("food", 1)
-						user:setVital("water", 1)
-                        vRP.EXT.Base.remote._notify(user.source, lang.jail.resent())
-                        jail_clock(tonumber(user.id), tonumber(custom))
-						
-	
-					local message = "**System Event**\n**Type:** `Resent to Prison` \n**ID:** `"..user.id.."`\n**Reason:** `Did not finish sentence and was re-jailed.`\n**Time Remaining:** `"..custom.." minutes remaining.` ```ini\n" ..maindate.."```"
-					--PerformHttpRequest(Addons_WebHook, function(err, text, headers) end, 'POST', json.encode({username = name, content = message}), { ['Content-Type'] = 'application/json' })
-
-						
-                    end
-                end
-            end
-
-        end)
-    end
-	
-  end
-end	
-
-
-
 function jail_clock(target_id,timer)
-	uuser = vRP.users[tonumber(target_id)]
+  local uuser = vRP.users[tonumber(target_id)]
   local online = false
   for k,v in pairs(vRP.users) do  
 	if tonumber(k) == tonumber(target_id) then
@@ -1008,60 +961,75 @@ function jail_clock(target_id,timer)
 	  uuser:setVital("water", 0)
       vRP.EXT.Base.remote._notify(uuser.source, lang.jail.free())
 	  vRP:setUData(tonumber(target_id),"vRP:jail:time",json.encode(-1))
-	  vRP:save(uuser.id)
+
   
 	  end
 	end
 end
+	
+-- EVENT
+AddonsV.event = {}
+
+
+function AddonsV.event:playerStateLoaded(user)
+if user and user:isReady() then
+
+  	    local custom = {}
+            local value = vRP:getUData(user.id, "vRP:jail:time")
+
+            if value ~= nil then
+                custom = json.decode(value)
+
+                if custom ~= nil then
+                    if tonumber(custom) > 0 then
+						local audio = lang.jail.audio()
+						vRP.EXT.Audio.remote._playAudioSource(user.source, audio, 0.3, x,y,z, 15)
+						vRP.EXT.Police.remote._setHandcuffed(user.source, true)
+                        vRP.EXT.Base.remote._teleport(user.source, 1641.5477294922, 2570.4819335938, 45.564788818359) -- teleport inside jail
+						user:setVital("food", 1)
+						user:setVital("water", 1)
+                        vRP.EXT.Base.remote._notify(user.source, lang.jail.resent())
+                        jail_clock(tonumber(user.id), tonumber(custom))				
+                end
+            end
+        end
+	end
+end
+
 
 	
 -- TUNNEL
-Addons.tunnel = {}
-
-function Addons.tunnel:breakVan()
-    local user = vRP.users_by_source[source]
-	local audio = "https://vignette.wikia.nocookie.net/soundeffects/images/a/a3/Hollywoodedge%2C_Car_Alarm_Rapid_Highp_PE074901.ogg"
-	local x,y,z = vRP.EXT.Base.remote.getPosition(user.source)
-
-	if user:tryTakeItem("plasmacutter", 1) then
-		local x,y,z = vRP.EXT.Base.remote.getPosition(user.source)
-		vRP.EXT.Phone:sendServiceAlert(nil, "police" ,x,y,z, "Armored Van Robbery in Progress")
-		vRP.EXT.Base.remote._notifyPicture(user.source, "CHAR_LESTER", 1, "WARNING", "Alarm Triggered", "The police were alerted!")
-		vRP.EXT.Audio.remote._playAudioSource(-1, audio, 0.7, x,y,z, 75)    
-	end
-end
-	
-	
-function Addons.tunnel:removeSpike()
-    local user = vRP.users_by_source[source]
-self.spikes[user.source] = false
-end
+AddonsV.tunnel = {}
 
 
-function Addons.tunnel:setAudio()
+function AddonsV.tunnel:setAudio()
     local audio = lang.bbox.audio()
     local user = vRP.users_by_source[source]
 
-    if globalbox then
+    if user then
+	if globalbox then
         vRP.EXT.Audio.remote._setAudioSource(-1, user.id, audio, 0.3, 0, 0, 0, 30, user.source)
         vRP.EXT.Base.remote._notify(user.source, lang.bbox.playinglo())
     else
         vRP.EXT.Audio.remote._setAudioSource(user.source, user.id, audio, 0.3, 0, 0, 0, 30, user.source)
         vRP.EXT.Base.remote._notify(user.source, lang.bbox.playinlo())
+		end
     end
 end
 
-function Addons.tunnel:stopAudio()
+function AddonsV.tunnel:stopAudio()
     local user = vRP.users_by_source[source]
 
-    if globalbox then
+    if user then
+	if globalbox then
         globalbox = false
         vRP.EXT.Audio.remote._removeAudioSource(-1, user.id)
     else
         localbox = false
         vRP.EXT.Audio.remote._removeAudioSource(user.source, user.id)
+		end
     end
 end
 
 
-vRP:registerExtension(Addons)	
+vRP:registerExtension(AddonsV)

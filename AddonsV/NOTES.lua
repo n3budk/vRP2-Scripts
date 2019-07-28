@@ -27,7 +27,8 @@ Permissions:
 "no_boombox_req", --no boombox is required in inventory
 		
 		
-Items:
+Items are now added directly in the server.lua and can be used directly in the inventory of the given drug or item
+[[
   ["lighter"] = {"Lighter","",nil,0.09},
   ["rolly"] = {"Rolling Paper","",nil,0.01},
   ["weed"] = {"Weed","",nil,0.05},
@@ -41,3 +42,4 @@ Items:
   ["boom_box"] = {"Boom Box","",nil,1.2},
   ["lockpick"] = {"Lock Pick","",nil,0.5},
   ["plasmacutter"] = {"Plasma Cutter","",nil,1.0},
+  ]]
