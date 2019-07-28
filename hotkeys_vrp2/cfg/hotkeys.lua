@@ -15,35 +15,7 @@ cfg.hotkeys = {
     end,
   },
 
-    [46] = {
-    -- E call/skip emergency
-    group = 0, 
-	pressed = function() 
-	  if vRP.EXT.Survival:isInComa() then
-	    if called == 0 then 
-	      local skipper,caller = true --vRP.EXT.HotKeys.remote._canSkipComa() -- permission to skip when no Doc is online, or just call them when they are. Change them on client.lua too if you do
-		    if skipper or caller then
-		      local docs = vRP.EXT.HotKeys.remote._docsOnline()
-		        if docs == 0 and skipper then
-				  vRP.EXT.Survival:killComa()
-			    else
-				  called = 30
-				  local x,y,z = table.unpack(GetEntityCoords(GetPlayerPed(-1),true))
-				  vRP.EXT.HotKeys.remote._helpComa(x,y,z)
-				  Citizen.Wait(1000)
-			    end
-            end
-		else
-		  vRP.EXT.Base:notify("~r~You already called the ambulance.")
-		end
-	  end
-	end,
-	released = function()
-	  -- Do nothing on release because it's toggle.
-	end,
-  },
-  
-[168] = { --works
+[168] = {
     -- F6 Toggle Kneel Surrender
     group = 1, 
     pressed = function() 
