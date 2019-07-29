@@ -20,19 +20,19 @@ Citizen.CreateThread(function()
 				loadAnimDict( "random@arrests" )
 				if IsControlJustReleased( 0, 246 ) and usageAllowed then -- INPUT_CHARACTER_WHEEL (LEFT ALT)
 				
-				vRP.EXT.Emotes2:clearEmotes()
+				--vRP.EXT.Emotes2:clearEmotes()
 					--TriggerServerEvent('InteractSound_SV:PlayOnSource', 'off', 0.1)
 					ClearPedTasks(ped)
 					SetEnableHandcuffs(ped, false)
 				else
 					if IsControlJustPressed( 0, 246 ) and not IsPlayerFreeAiming(PlayerId()) and usageAllowed then -- INPUT_CHARACTER_WHEEL (LEFT ALT)
 
-						vRP.EXT.Emotes2:clearEmotes()
+						--vRP.EXT.Emotes2:clearEmotes()
 						--TriggerServerEvent('InteractSound_SV:PlayOnSource', 'on', 0.1)
 						TaskPlayAnim(ped, "random@arrests", "generic_radio_enter", 8.0, 2.0, -1, 50, 2.0, 0, 0, 0 )
 					elseif IsControlJustPressed( 0, 246 ) and IsPlayerFreeAiming(PlayerId()) and usageAllowed then -- INPUT_CHARACTER_WHEEL (LEFT ALT)
 
-						vRP.EXT.Emotes2:clearEmotes()
+						--vRP.EXT.Emotes2:clearEmotes()
 						--TriggerServerEvent('InteractSound_SV:PlayOnSource', 'on', 0.1)
 						TaskPlayAnim(ped, "random@arrests", "radio_chatter", 8.0, 2.0, -1, 50, 2.0, 0, 0, 0 )
 						SetEnableHandcuffs(ped, true)
@@ -65,14 +65,14 @@ Citizen.CreateThread( function()
 
 				loadAnimDict( "reaction@intimidation@cop@unarmed" )		
 				if IsDisabledControlJustReleased( 0, 20 ) then -- INPUT_MULTIPLAYER_INFO (Z)
-				vRP.EXT.Emotes2:clearEmotes()
+				--vRP.EXT.Emotes2:clearEmotes()
 					ClearPedTasks(ped)
 					SetEnableHandcuffs(ped, false)
 					SetCurrentPedWeapon(ped, GetHashKey("WEAPON_UNARMED"), true)
 				else
 					if IsDisabledControlJustPressed( 0, 20 ) and usageAllowed then -- INPUT_MULTIPLAYER_INFO (Z)
 
-						vRP.EXT.Emotes2:clearEmotes()
+						--vRP.EXT.Emotes2:clearEmotes()
 						SetEnableHandcuffs(ped, true)
 						SetCurrentPedWeapon(ped, GetHashKey("WEAPON_UNARMED"), true) 
 						TaskPlayAnim(ped, "reaction@intimidation@cop@unarmed", "intro", 8.0, 2.0, -1, 50, 2.0, 0, 0, 0 )
@@ -100,7 +100,7 @@ end )
 			if CheckWeapon(ped) then
 				if holstered then
 
-				vRP.EXT.Emotes2:clearEmotes()
+				--vRP.EXT.Emotes2:clearEmotes()
 					TaskPlayAnim(ped, "rcmjosh4", "josh_leadout_cop2", 8.0, 2.0, -1, 48, 10, 0, 0, 0 )
 					Citizen.Wait(600)
 					ClearPedTasks(ped)
@@ -111,7 +111,7 @@ end )
 				if not holstered then
 				
 
-				vRP.EXT.Emotes2:clearEmotes()
+				--vRP.EXT.Emotes2:clearEmotes()
 					TaskPlayAnim(ped, "weapons@pistol@", "aim_2_holster", 8.0, 2.0, -1, 48, 10, 0, 0, 0 )
 					Citizen.Wait(500)
 					ClearPedTasks(ped)
