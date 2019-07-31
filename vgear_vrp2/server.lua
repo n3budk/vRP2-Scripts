@@ -16,19 +16,31 @@ local function menu_vgear(self)
 end
 
     vRP.EXT.GUI:registerMenuBuilder("loadout", function(menu)
-      menu:addOption("Gear", m_loadout,"Apply twice to take effect.")
+      menu:addOption("Police Gear", m_loadout,"Apply every 30 minutes")
   end)
 end  
-  
-  
+
+
 function vGear:__construct()
     vRP.Extension.__construct(self)
 
 	
   self.cfg = module("vgear_vrp2", "cfg/vgear")
+  
   menu_vgear(self)	
 	
 
+  local function m_loadout(menu)
+    local user = menu.user
+		self.remote._loadOutWeapons(user.source)
+
+end
+	
+    vRP.EXT.GUI:registerMenuBuilder("police", function(menu)
+        menu:addOption("Police Gear", m_loadout, "Apply every 30 minutes")
+
+    end)	
+	
 end
 
 

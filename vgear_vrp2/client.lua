@@ -25,43 +25,64 @@ local spawnLoadoutExtrasList = {
 	
 	
 	
-	
-	
-	
-	
-	
     {0x555AF99A, 0x7BC4CDDC},   -- pimp shotgun MK2 Flashlight
     {0x555AF99A, 0x4E65B425},   -- pimp shotgun MK2 Buck Shots
     {0x555AF99A, 0xE3BD9E44},   -- pimp shotgun MK2 Cammo	
     {0x555AF99A, 0x5F7DCE4D},   -- pimp shotgun MK2 Muzzle
     {0x555AF99A, 0x3F3C8181},   -- pimp shotgun MK2 Muzzle	
 	
-		
-	
 
 }
+
+timeLeft = 60
+timer = true
+
+function vGear:__construct()
+    vRP.Extension.__construct(self)
+	
+Citizen.CreateThread(function()
+    while true do
+        Wait(1000)
+        if not timer then
+            timeLeft = timeLeft - 1
+
+            if timeLeft < 1 then
+                timeLeft = 60
+                timer = true
+            end
+        end
+    end
+end)	
+	
+end
 
 
 
 function vGear:loadOutWeapons()
-    local ped = GetPlayerPed(-1)
+	if timer then
+	timer = false
+	local ped = GetPlayerPed(-1)
     for k, w in pairs(spawnLoadoutList) do
-        GiveWeaponToPed(GetPlayerPed(-1), w[1], w[2], false, false)
-    end
+        GiveWeaponToPed(ped, w[1], w[2], false, false)
+    end		
     for k, c in pairs(spawnLoadoutExtrasList) do
-        GiveWeaponComponentToPed(ped, c[1], c[2])
+        GiveWeaponComponentToPed(GetPlayerPed(-1), c[1], c[2])
     end
-    TriggerEvent('chatMessage', '', {255,255,255}, "Weapons Equipped")
-end
-
-
-----------------------------------------------------------------------------
-function vGear:__construct()
-    vRP.Extension.__construct(self)
-
+    for k, w in pairs(spawnLoadoutList) do
+		local ped = GetPlayerPed(-1)
+        GiveWeaponToPed(ped, w[1], w[2], false, false)
+        ClearPedBloodDamage(ped)
+        SetPedArmour(ped, 100)
+        SetEntityHealth(ped, 200)
+		vRP.EXT.Base:notify("Gear Applied")
+    end	
+	else 
+		vRP.EXT.Base:notify("Gear was applied recently")
+	end
 end
 
 vGear.tunnel = {}
+
 vGear.tunnel.loadOutWeapons = vGear.loadOutWeapons
 
 
