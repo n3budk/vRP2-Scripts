@@ -1,8 +1,5 @@
 local LegacyFuel = class("LegacyFuel", vRP.Extension)
 
-config = module("vrp_legacyfuel", "config")
-
-
 models = {
 	[1] = -2007231801,
 	[2] = 1339433404,
@@ -23,6 +20,8 @@ blacklistedVehicles = {
 	[7] = 'TRIBIKE3'
 }
 
+ EnableJerryCans			= true
+ VehicleFailure			= 2
  Vehicles 				  = {}
  pumpLoc 				  = {}
  nearPump 				  = false
@@ -35,15 +34,16 @@ blacklistedVehicles = {
 
 function LegacyFuel:__construct()
 	vRP.Extension.__construct(self)
-
+	
+self.open = true
+	
+	
 		Citizen.CreateThread(function()
 		while true do
 			Citizen.Wait(5)
 
 			if not InBlacklistedVehicle then
-				if Timer then
-					DisplayHud()
-				end
+
 
 				if nearPump and IsCloseToLastVehicle then
 					local vehicle  = GetPlayersLastVehicle()
@@ -114,7 +114,7 @@ function LegacyFuel:__construct()
 							FuelVehicle()
 						end
 					end
-				elseif NearVehicleWithJerryCan and not nearPump and Config.EnableJerryCans then
+				elseif NearVehicleWithJerryCan and not nearPump and EnableJerryCans then
 					local vehicle  = GetPlayersLastVehicle()
 					local coords   = GetEntityCoords(vehicle)
 					local fuel 	   = round(GetVehicleFuelLevel(vehicle), 1)
@@ -337,24 +337,10 @@ function LegacyFuel:__construct()
 		end
 	end)
 
-	Citizen.CreateThread(function()
-		while true do
-			Citizen.Wait(250)
-
-			if IsPedInAnyVehicle(GetPlayerPed(-1)) then
-				Citizen.Wait(2500)
-
-				Timer = true
-			else
-				Timer = false
-			end
-		end
-	end)
 
 	Citizen.CreateThread(function()
 		while true do
 			Citizen.Wait(1500)
-
 			nearPump 			 	= false
 			IsCloseToLastVehicle 	= false
 			found 				 	= false
@@ -384,14 +370,14 @@ function LegacyFuel:__construct()
 					break
 				end
 			end
-
-			if IsPedInAnyVehicle(GetPlayerPed(-1), false) then
+			local owned = vRP.EXT.Garage:getInOwnedVehicleModel()
+			if IsPedInAnyVehicle(GetPlayerPed(-1), false) and not owned then
 				local vehicle = GetPlayersLastVehicle()
 				local plate   = GetVehicleNumberPlateText(vehicle)
 				local model = GetEntityModel(vehicle)
 				local fuel 	  = GetVehicleFuelLevel(vehicle)
 				local found   = false
-				local owned = vRP.EXT.Garage:getInOwnedVehicleModel()
+				
 
 				self.remote._CheckServerFuelTable(plate, model)
 
@@ -406,7 +392,7 @@ function LegacyFuel:__construct()
 					end
 				end
 	
-				if not found and not owned then
+				if not found then
 					integer = math.random(200, 800)
 					fuel 	= integer / 10
 
@@ -416,7 +402,12 @@ function LegacyFuel:__construct()
 				end
 
 				SetVehicleFuelLevel(vehicle, fuel)
+					else
+				self.remote._UpdateServerFuelTable(plate, model, fuel)	
+				table.insert(Vehicles, {plate = plate, model = model ,fuel = fuel})
+
 			end
+
 
 			local currentVeh = GetDisplayNameFromVehicleModel(GetEntityModel(GetVehiclePedIsUsing(GetPlayerPed(-1))))
 
@@ -457,6 +448,10 @@ function LegacyFuel:__construct()
 			local vehicle = GetVehiclePedIsIn(GetPlayerPed(-1))
 			local engine  = Citizen.InvokeNative(0xAE31E7DF9B5B132E, vehicle)
 
+			if (GetVehicleClass(vehicle) == 15)  or (GetVehicleClass(vehicle) == 14) or (GetVehicleClass(vehicle) == 16) then
+			SetVehicleFuelLevel(vehicle, 100.0)
+
+			else
 			if vehicle and engine then
 				local plate    	   = GetVehicleNumberPlateText(vehicle)
 				local model 			= GetEntityModel(vehicle)
@@ -492,6 +487,7 @@ function LegacyFuel:__construct()
 			else
 				rpmfuelusage = fuel - rpm / 8.4
 				Citizen.Wait(15000)
+
 			end
 				if owned then 
 				SetVehicleFuelLevel(vehicle, rpmfuelusage)
@@ -514,12 +510,13 @@ function LegacyFuel:__construct()
 					end
 				end
 
-				if rpmfuelusage < Config.VehicleFailure then
+				if rpmfuelusage < VehicleFailure then
 					SetVehicleUndriveable(vehicle, true)
 				elseif rpmfuelusage == 0 then
 					SetVehicleEngineOn(vehicle, false, false, false)
 				else
 					SetVehicleUndriveable(vehicle, false)
+					end
 				end
 			end
 		end
@@ -595,33 +592,6 @@ function GetSeatPedIsIn(ped)
 	return -2
 end
 
-function DisplayHud()
-	if IsPedInAnyVehicle(GetPlayerPed(-1), false) and GetSeatPedIsIn(GetPlayerPed(-1)) == -1 then
-		local vehicle = GetPlayersLastVehicle()
-		local fuel    = math.ceil(round(GetVehicleFuelLevel(vehicle), 1))
-		local kmh 	  =	round(GetEntitySpeed(vehicle) * 3.6, 0)
-		local mph 	  = round(GetEntitySpeed(vehicle) * 2.236936, 0)
-
-		if fuel == 0 then
-			fuel = "0"
-		end
-		if kmh == 0 then
-			kmh = "0"
-		end
-		if mph == 0 then
-			mph = "0"
-		end
-
-		x = 0.01135
-		y = 0.002
-
-		--DrawAdvancedText(0.130 - x, 0.94 - y, 0.147, -0.015, 0.6, fuel, 255, 255, 255, 255, 6, 1)
-		--DrawAdvancedText(0.166 - x, 0.94 - y, 0.147, -0.015, 0.6, mph, 255, 255, 255, 255, 6, 1)
-		
-		--DrawAdvancedText(0.184 - x, 0.9465 - y, 0.147, -0.015, 0.4, "mph", 255, 255, 255, 255, 6, 1)
-		--DrawAdvancedText(0.148 - x, 0.9465 - y, 0.147, -0.015, 0.4, "Fuel", 255, 255, 255, 255, 6, 1)
-	end
-end
 
 
 function LegacyFuel:ReturnFuelFromServerTable(vehInfo)
@@ -639,6 +609,10 @@ function LegacyFuel:ReturnFuelFromServerTable(vehInfo)
 end
 
 
+			
+function LegacyFuel:blockEnter(flag)
+	self.open = flag
+end
 
 function LegacyFuel:RecieveCashOnHand(cb)
 
@@ -647,6 +621,10 @@ function LegacyFuel:RecieveCashOnHand(cb)
 end
 
 LegacyFuel.tunnel = {}
+
+
+LegacyFuel.tunnel.blockEnter = LegacyFuel.blockEnter
+LegacyFuel.tunnel.setFuel = LegacyFuel.setFuel
 LegacyFuel.tunnel.RecieveCashOnHand = LegacyFuel.RecieveCashOnHand
 LegacyFuel.tunnel.ReturnFuelFromServerTable = LegacyFuel.ReturnFuelFromServerTable
 
