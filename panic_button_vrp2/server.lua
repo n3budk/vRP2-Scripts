@@ -14,7 +14,7 @@ function PanicAlert:sendAlert(x,y,z, name, id)
     local targets = {}
 
     for _, user in pairs(vRP.users) do
-        if user:isReady() and user:hasPermission("panic.alert") then
+        if user:isReady() and user:hasPermission("panic.alert") then --Allow Police and EMS to receive a Alert
             table.insert(targets, user)
         end
     end
@@ -36,9 +36,9 @@ PanicAlert.event = {}
 
 
 function PanicAlert.event:playerStateLoaded(user)
-if user and user:isReady() then
+if user then
 self.remote._setStateReady(user.source, true) --only allow to activate when user state is ready
-    if user:hasPermission("police.market") then
+    if user:hasPermission("police.market") then --Only Allow Police to Send a Alarm
         self.remote._checkPermission(user.source, true)
     else
         self.remote._checkPermission(user.source, false)
@@ -54,6 +54,21 @@ function PanicAlert.event:playerJoinGroup(user)
     end
 end
 
+function PanicAlert.event:playerLeaveGroup(user)
+    if user:hasPermission("police.market") then
+        self.remote._checkPermission(user.source, true)
+    else
+        self.remote._checkPermission(user.source, false)
+    end
+end
+
+function PanicAlert.event:playerSpawn(user, first_spawn)
+    if user:hasPermission("police.market") then
+        self.remote._checkPermission(user.source, true)
+    else
+        self.remote._checkPermission(user.source, false)
+    end
+end
 
 
 -- TUNNEL
@@ -65,9 +80,11 @@ local x,y,z = vRP.EXT.Base.remote.getPosition(user.source)
 local identity = vRP.EXT.Identity:getIdentity(user.cid)
 local name = identity.name
 local id = user.id
+  if user then
   if user:hasPermission("police.market") then
 vRP.EXT.Base.remote._notify(user.source, "~b~Panic button triggered. All available units were notified.")
 self:sendAlert(x,y,z, name, id)
+	end
   end
 end
 
